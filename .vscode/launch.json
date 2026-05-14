@@ -1,0 +1,44 @@
+{
+    "configurations": [
+        {
+            "type": "swift",
+            "request": "launch",
+            "args": [],
+            "cwd": "${workspaceFolder:UTCClock}",
+            "name": "Debug UTCMenuBarTests",
+            "target": "UTCMenuBarTests",
+            "configuration": "debug",
+            "preLaunchTask": "swift: Build Debug UTCMenuBarTests"
+        },
+        {
+            "type": "swift",
+            "request": "launch",
+            "args": [],
+            "cwd": "${workspaceFolder:UTCClock}",
+            "name": "Release UTCMenuBarTests",
+            "target": "UTCMenuBarTests",
+            "configuration": "release",
+            "preLaunchTask": "swift: Build Release UTCMenuBarTests"
+        },
+        {
+            "type": "swift",
+            "request": "launch",
+            "args": [],
+            "cwd": "${workspaceFolder:UTCClock}",
+            "name": "Debug UTCMenuBar",
+            "target": "UTCMenuBar",
+            "configuration": "debug",
+            "preLaunchTask": "swift: Build Debug UTCMenuBar"
+        },
+        {
+            "type": "swift",
+            "request": "launch",
+            "args": [],
+            "cwd": "${workspaceFolder:UTCClock}",
+            "name": "Release UTCMenuBar",
+            "target": "UTCMenuBar",
+            "configuration": "release",
+            "preLaunchTask": "swift: Build Release UTCMenuBar"
+        }
+    ]
+}
