@@ -21,8 +21,10 @@ both your local time **and** UTC visible at a glance.
 The standard approaches all have issues:
 
 - macOS lets you switch the system clock to UTC, but then you lose local time.
-- Adding a second clock via iStat Menus or There costs money and brings a lot
-  of features you may not need.
+- Adding a second clock via iStat Menus costs money and brings a lot of
+  features you may not need; full multi-timezone planners like Clocker or
+  There work great but optimize for tracking *people across cities*, not
+  for one clean UTC display.
 - Most free menu-bar UTC clocks render UTC in the **same font, weight, and
   color** as the system clock right next to them, which defeats the point —
   you have to read the digits to tell them apart.
@@ -179,71 +181,190 @@ acceptance criteria.
 
 ## How UTCMenuBar compares to other Mac timezone apps
 
-Be honest about scope: UTCMenuBar is **not** a multi-timezone power tool. It
-shows UTC, beautifully and distinctly. If you need to track teammates across
-five cities, [There](https://there.pm/) or iStat Menus will serve you better.
+Most pages like this overclaim. Below is a feature-by-feature comparison
+against the Mac menu-bar timezone tools that actually exist on GitHub or in
+the wild as of **May 2026**, with star counts and last-commit dates so you
+can sanity-check the landscape yourself.
 
-| Feature                              | **UTCMenuBar** | There.pm | Menu World Time | iStat Menus | SwiftUTCMenuClock | ZuluBar |
-| ------------------------------------ | -------------- | -------- | --------------- | ----------- | ----------------- | ------- |
-| **Open source**                      | Yes (planned MIT) | Yes      | No              | No          | Yes (MIT)         | Yes     |
-| **Free**                             | Yes            | Yes      | Paid (App Store)| Paid        | Yes               | Yes     |
-| **Account / sign-in required**       | No             | No       | No              | No          | No                | No      |
-| **Telemetry**                        | None           | None stated | ?            | ?           | None              | None    |
-| **macOS minimum**                    | 13             | 13       | varies          | varies      | 10.15             | 14      |
-| **Shows UTC in menu bar**            | Yes            | Via offset | Yes           | Yes         | Yes               | Yes     |
-| **Multiple timezones in menu bar**   | No             | Yes      | Yes             | Yes         | No                | No      |
-| **Per-timezone labels / avatars**    | No             | Yes      | Yes             | Limited     | No                | No      |
-| **Visually distinct UTC styling**    | **Yes (5 axes)** | No     | No              | Limited     | No                | Limited |
-| **— font family**                    | Yes            | No       | No              | No          | No                | No      |
-| **— font weight**                    | Yes            | No       | No              | No          | No                | No      |
-| **— font size**                      | Yes            | No       | No              | No          | No                | No      |
-| **— color**                          | Yes            | No       | No              | No          | No                | No      |
-| **— decorator (brackets / bars)**    | Yes            | No       | No              | No          | No                | Yes (suffix only) |
-| **Compact time / date toggles**      | Yes            | n/a      | ?               | Yes         | ?                 | Yes (seconds) |
-| **Date prefix**                      | Yes            | n/a      | Yes             | Yes         | ?                 | Yes     |
-| **Click-to-copy timestamp**          | No             | No       | No              | No          | No                | Yes (3 formats) |
-| **Calendar / meeting integration**   | No             | No       | Limited         | Yes         | No                | No      |
-| **Sun / moon / weather data**        | No             | Limited  | No              | Yes         | No                | No      |
-| **iOS / cross-platform**             | No             | No       | No              | No          | No                | No      |
-| **Actively maintained (2026)**       | Yes            | Yes      | ?               | Yes         | No (last 2021)    | Yes     |
+UTCMenuBar is deliberately narrow: **show UTC, make it visually distinct.**
+It is not a meeting planner, world-clock dashboard, or people tracker.
+For those, the right answer is one of the other tools below.
 
-Sources: vendor pages and GitHub repos as of 2026-05.
-[There](https://there.pm/),
-[iStat Menus](https://bjango.com/mac/istatmenus/),
+### What's actually out there (May 2026)
+
+A search for `macos menu bar UTC clock`, `macos status bar timezone swift`,
+and `topic:menubar timezone` on GitHub plus the well-known paid players
+turns up roughly four useful clusters of tools:
+
+1. **UTC-only OSS clocks.** `netik/UTCMenuClock`, `jonblatho/SwiftUTCMenuClock`,
+   `tra0x/ZuluBar`, and this project.
+2. **Multi-timezone OSS clocks / planners.** `n0shake/Clocker`,
+   `dena-sohrabi/There`, `kartik-venugopal/world-clock`,
+   `patrik-bernas/whenish`, `shivanshthapliyal/meridian`.
+3. **Closed-source paid suites.** [iStat Menus](https://bjango.com/mac/istatmenus/)
+   (system monitoring + clocks); App Store options like *Menu World Time* and
+   *World Clock Pro* (closed source, paid, not benchmarked here because public
+   feature pages don't disclose enough to compare fairly).
+4. **The "people, not timezones" niche.** [There](https://there.pm/) — a
+   distributed-team tracker that the open-source `dena-sohrabi/There` repo
+   mirrors.
+
+### Activity / popularity reality check
+
+| Project | Stars | Last push | License | Notes |
+| --- | ---: | --- | --- | --- |
+| `n0shake/Clocker` | 608 | 2026-05-13 | MIT | Most-starred OSS option; full meeting planner |
+| `dena-sohrabi/There` | 272 | 2024-09-18 | MIT | Free; closely tied to [there.pm](https://there.pm/) |
+| `netik/UTCMenuClock` | 252 | 2025-12-12 | Apache-2.0 | The OG; macOS 15+; Objective-C |
+| `amiantos/dotbeat` | 40 | 2024-06-16 | MPL-2.0 | Swatch Internet Time, not regular zones |
+| `kartik-venugopal/world-clock` | 21 | 2024-01-10 | MIT | macOS 10.12+; minimal |
+| `jonblatho/SwiftUTCMenuClock` | 13 | 2021-10-26 | MIT | Effectively abandoned (no commits in 4+ years) |
+| `tra0x/ZuluBar` | 0 | 2026-05-10 | MIT | New; signed build is $5, source build free |
+| `patrik-bernas/whenish` | 0 | 2026-05-09 | MIT | New; multi-zone with availability bars |
+| `shivanshthapliyal/meridian` | 2 | 2026-04-01 | MIT | New; macOS 26.0 (Tahoe) only |
+| `NestDream/UTCMenuBar` (this) | n/a | active | MIT (planned) | UTC-only, focuses on visual distinction |
+
+> Takeaway: most OSS UTC-specific tools are either dead (SwiftUTCMenuClock)
+> or pre-1.0 (ZuluBar, this project). The OG `netik/UTCMenuClock` is alive
+> again as of late 2025 but requires macOS 15+ and is Objective-C only. The
+> well-maintained options are multi-timezone planners (Clocker, There,
+> Whenish), not bare UTC clocks.
+
+### Feature comparison
+
+The columns below are: **UTCMenuBar** (this app), **netik/UTCMenuClock**
+(the OG OSS UTC clock), **ZuluBar** (recent OSS UTC clock), **Clocker**
+(most-starred OSS multi-timezone), **There** (people tracker, OSS + paid web
+companion), **iStat Menus** (commercial system suite). Cells: ✓ = supported,
+✗ = not supported, ◐ = partial, ? = not documented on the public page.
+
+| Dimension | UTCMenuBar | UTCMenuClock | ZuluBar | Clocker | There | iStat Menus |
+| --- | :---: | :---: | :---: | :---: | :---: | :---: |
+| License / cost | MIT, free | Apache-2.0, free | MIT (free source / $5 signed build) | MIT, free | MIT, free | Closed source, paid <sup>1</sup> |
+| Last commit (2026-05) | active | 2025-12 | 2026-05 | 2026-05 | 2024-09 | continuous |
+| macOS minimum | 13 | 15 | 14 | 14 | 13 | varies (current 6.x) |
+| Open-source | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ |
+| No account / no telemetry | ✓ | ✓ | ✓ | ✓ | ✓ | ? |
+| **Time display** | | | | | | |
+| Shows UTC in menu bar | ✓ | ✓ | ✓ | ✓ <sup>2</sup> | ◐ <sup>3</sup> | ✓ |
+| Multiple timezones in menu bar | ✗ | ✗ | ✗ | ✓ | ✓ | ✓ |
+| Per-timezone labels / avatars | ✗ | ✗ | ✗ | ✓ (custom labels) | ✓ (photos/handles) | ✓ (custom labels) |
+| 24h / 12h toggle | ✗ <sup>4</sup> | ✓ | ? | ✓ | ✓ | ✓ |
+| Show seconds toggle | ✓ | ✓ | ✓ | ✓ | ? | ✓ |
+| Date display | ✓ | ✓ | ✓ | ? | ? | ✓ |
+| Compact time / date format | ✓ | ✗ | ◐ (seconds only) | ◐ (compact menubar mode) | ? | ✓ |
+| ISO-8601 / RFC 3339 menubar | ✗ | ✓ | ✗ | ? | ✗ | ? |
+| Custom format string | ✗ | ✗ | ✗ | ✗ | ✗ | ✓ |
+| **Visual distinction** | | | | | | |
+| Custom font family | ✓ (System / Menlo / SF Mono) | ✗ | ✗ | ✗ | ✗ | ? |
+| Custom font weight | ✓ | ✗ | ✗ | ✗ | ✗ | ? |
+| Custom font size | ✓ (±2pt) | ✗ | ✗ | ✗ | ✗ | ? |
+| Custom color | ✓ (6 system-dynamic colors) | ✗ | ✗ | ✓ (4 themes, popover only) | ✗ | ? |
+| Decorator / brackets / bars | ✓ (4 styles) | ✗ | ◐ (`Z` / `UTC` suffix) | ✗ | ✗ | ✗ |
+| Custom emoji prefix | ✗ <sup>4</sup> | ✗ | ✗ | ✗ | ✗ | ✗ |
+| **Interactions** | | | | | | |
+| Click-to-copy current time | ✗ <sup>4</sup> | ✓ (current format + ISO-8601) | ✓ (display / Unix / RFC 3339) | ? | ✗ | ? |
+| Bidirectional timezone converter | ✗ <sup>4</sup> | ✗ | ✗ | ◐ (time scrubber) | ✗ | ? |
+| Time-travel slider / scrubber | ✗ | ✗ | ✗ | ✓ (±7 days, 15-min steps) | ✗ | ✗ |
+| Global hotkey | ✗ | ✗ | ✓ | ✓ (⌘L) | ? | ? |
+| Settings window with live preview | ✓ | ✗ | ✗ | ✓ | ✓ | ✓ |
+| **Integrations** | | | | | | |
+| Launch at login (in-app) | ✗ <sup>4</sup> | ✓ | ? | ✓ | ? | ✓ |
+| Calendar / meeting integration | ✗ | ✗ | ✗ | ✓ (Apple Calendar, one-click join Zoom/Meet/Teams) | ✗ | ✓ |
+| Sun / moon data | ✗ | ✗ | ✗ | ◐ (day/night) | ✗ | ✓ |
+| Weather data | ✗ | ✗ | ✗ | ✗ | ✗ | ✓ |
+| iCloud sync | ✗ | ✗ | ✗ | ✓ | ✗ | ? |
+| Multi-display awareness | ✗ <sup>5</sup> | ✗ <sup>5</sup> | ✗ <sup>5</sup> | ✗ <sup>5</sup> | ✗ <sup>5</sup> | ✗ <sup>5</sup> |
+| Localization (UI) | ✗ (Chinese menu strings only) | ✗ (English) | ✗ (English) | ✓ (Crowdin community) | ✗ (English) | ✓ |
+| Distribution (.app available) | source-build only | unsigned binary on GitHub | source build free / signed $5 | Homebrew cask + GitHub release | Homebrew cask + there.pm | direct buy + Setapp |
+
+<sup>1</sup> iStat Menus' single-license price is no longer published on the
+vendor's public page (shows as `$?` placeholder); historically it has been
+in the ~US$10–15 range. It is also bundled in [Setapp](https://setapp.com/)
+at $9.99/month.
+<sup>2</sup> Clocker can pin any timezone to the menu bar, including UTC,
+but it's a multi-timezone tool first.
+<sup>3</sup> There supports raw UTC offsets per person, but its primary unit
+is "a person in a city," not "UTC."
+<sup>4</sup> On the [Roadmap](#roadmap) for UTCMenuBar.
+<sup>5</sup> No menu-bar app on macOS gets per-display menu bars; this is a
+macOS limitation, not a per-app one.
+
+Sources verified May 2026: GitHub repo metadata (stars, last push, license)
+via the GitHub API; READMEs of
+[Clocker](https://github.com/n0shake/Clocker),
+[There](https://github.com/dena-sohrabi/There),
+[UTCMenuClock](https://github.com/netik/UTCMenuClock),
+[ZuluBar](https://github.com/tra0x/ZuluBar),
 [SwiftUTCMenuClock](https://github.com/jonblatho/SwiftUTCMenuClock),
-[ZuluBar](https://github.com/tra0x/ZuluBar).
-A `?` means the app likely has the feature but the public page doesn't make it
-unambiguous.
+[world-clock](https://github.com/kartik-venugopal/world-clock),
+[whenish](https://github.com/patrik-bernas/whenish),
+[meridian](https://github.com/shivanshthapliyal/meridian);
+vendor pages [there.pm](https://there.pm/),
+[iStat Menus](https://bjango.com/mac/istatmenus/),
+[abhishekbanthia.com/clocker](https://abhishekbanthia.com/clocker).
+A `?` means the public docs don't say either way — not a guess.
 
-### Where each one fits
+### Pick the right tool
 
-- **There.pm** — best if you want to see *people across multiple timezones*
-  (with names and avatars) and don't care specifically about UTC. Genuinely
-  great app; UTCMenuBar does not try to compete with it.
-- **iStat Menus** — best if you also want CPU / RAM / network / battery /
-  weather widgets in the menu bar. Worth the price if you'd buy it for those.
-- **Menu World Time / World Clock Pro** — App Store paid options for
-  multi-timezone display in the menu bar. Closed source.
-- **SwiftUTCMenuClock** — closest in spirit to UTCMenuBar (Swift, MIT, free,
-  UTC-only) but appears unmaintained since 2021 and has no visual styling
-  controls.
-- **ZuluBar** — recently active OSS UTC clock with a thoughtful copy-formats
-  feature (display string / Unix epoch / RFC 3339). UTCMenuBar focuses more
-  on visual distinction; ZuluBar focuses more on copy interactions. Pick
-  whichever matters more to you — they are reasonable substitutes.
-- **UTCMenuBar** — best if your primary need is *"show me UTC, make it look
-  obviously different from my system clock, in an open-source app I can
-  audit, with no payment / login / telemetry"*.
+This list isn't trying to win every row. Pick the one that matches *your*
+job:
 
-### Honest limitations
+- **Pick UTCMenuBar if** you only need UTC, you want it to look
+  unambiguously different from the system clock right next to it, you want a
+  Swift / AppKit OSS app you can audit, no account / payment / telemetry,
+  and you'd benefit from the planned timezone converter and click-to-copy.
+  Best for: SREs / on-call / aviation / log triage / AWS console work.
 
-- Single timezone (UTC) only. If you need to display, say, UTC and PT side by
-  side, UTCMenuBar can't do it today. (See [Roadmap](#roadmap).)
-- No menu bar icon customization beyond the `🌐` emoji prefix.
-- No iOS app, no widgets, no iCloud sync.
-- No calendar / meeting integration; this is not a meeting planner.
-- Not yet on the Mac App Store; build from source for now.
-- Not widely tested in the wild yet — bug reports are welcome.
+- **Pick `netik/UTCMenuClock` if** you want a long-established OSS UTC
+  clock with built-in launch-at-login and click-to-copy in ISO-8601, and
+  you're already on macOS 15+. It's the most-starred UTC-only OSS option
+  (252 stars, active again in late 2025); Objective-C, no visual styling,
+  but solid.
+
+- **Pick `tra0x/ZuluBar` if** click-to-copy in multiple formats (display,
+  Unix epoch, RFC 3339) and a global hotkey are your top priorities, and
+  you don't need visual styling. Pay $5 for the signed build or build from
+  source. Brand-new project, low star count — buyer beware on stability.
+
+- **Pick `n0shake/Clocker` if** you need a real meeting planner — multiple
+  timezones, calendar integration, time scrubbing, one-click Zoom/Meet/Teams
+  join, iCloud sync. It's the most capable OSS option and it's free. Worth
+  trying first if you're not sure you specifically need *UTC*.
+
+- **Pick There ([there.pm](https://there.pm/) or
+  [the GitHub project](https://github.com/dena-sohrabi/There)) if** you
+  manage a distributed team and want to see *people* (with photos and
+  Twitter/Telegram handles) rather than timezones. Free. Shines in 1:1 lead
+  / IC contexts.
+
+- **Pick `patrik-bernas/whenish` if** you want a free OSS multi-timezone
+  view with per-city availability bars and overlap visualization, and don't
+  care about UTC specifically.
+
+- **Pick iStat Menus if** you already want CPU / RAM / network / battery /
+  weather widgets in the menu bar — its world clock is a small bonus. Don't
+  buy it just for the clock.
+
+### Honest limitations of UTCMenuBar
+
+Things competitors do better, today:
+
+- **Single timezone (UTC) only.** If you need UTC and PT side by side,
+  UTCMenuBar can't do it today. Clocker, There, Whenish, world-clock, and
+  Meridian all can. (See [Roadmap](#roadmap) for the planned converter,
+  which is a different shape from "multi-timezone in the menu bar.")
+- **No click-to-copy yet.** ZuluBar and UTCMenuClock both ship this; it's on
+  the roadmap here.
+- **No 24h/12h toggle.** Currently 24h-only. (Planned.)
+- **No launch-at-login toggle in-app.** You drag the .app into Login Items
+  manually. UTCMenuClock and Clocker do this from a menu item. (Planned.)
+- **No calendar / meeting integration.** Clocker is the gold standard here;
+  this app explicitly does not try to compete.
+- **No Mac App Store build, no signed/notarized release artifacts yet.**
+  Build from source for now.
+- **Menu strings are Chinese.** English localization is on the roadmap.
+- **Pre-1.0**, low star count, not yet battle-tested. Bug reports welcome.
 
 ---
 
