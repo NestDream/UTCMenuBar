@@ -23,16 +23,21 @@ public enum TimeFormatter {
     }
 
     /// Format the full menu bar display string.
-    /// Always starts with "🌐 " and ends with " UTC".
-    /// When showDate=true: "🌐 {date} {time} UTC"
-    /// When showDate=false: "🌐 {time} UTC"
-    public static func formatDisplay(date: Date, options: DisplayOptions) -> String {
+    /// Default icon prefix is "🌐 " (backward compatible); always ends with " UTC".
+    /// When showDate=true: "{iconPrefix}{date} {time} UTC"
+    /// When showDate=false: "{iconPrefix}{time} UTC"
+    public static func formatDisplay(
+        date: Date,
+        options: DisplayOptions,
+        iconPrefix: IconPrefix = .globe
+    ) -> String {
         let timePart = formatTime(date: date, compact: options.compactTime)
+        let prefix = iconPrefix.prefix
         if options.showDate {
             let datePart = formatDate(date: date, compact: options.compactDate)
-            return "🌐 \(datePart) \(timePart) UTC"
+            return "\(prefix)\(datePart) \(timePart) UTC"
         } else {
-            return "🌐 \(timePart) UTC"
+            return "\(prefix)\(timePart) UTC"
         }
     }
 }

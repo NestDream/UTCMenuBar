@@ -6,12 +6,15 @@ import UTCMenuBarLib
 enum StyleOptionsPropertyTests {
 
     private static func randomStyleOptions() -> StyleOptions {
-        StyleOptions(
+        let names = ["", "Helvetica", "Helvetica Neue", "Times-Roman", "Courier"]
+        return StyleOptions(
             fontFamily: FontFamily.allCases.randomElement()!,
             fontWeight: FontWeight.allCases.randomElement()!,
             fontSize: FontSize.allCases.randomElement()!,
             textColor: TextColorOption.allCases.randomElement()!,
-            decorator: Decorator.allCases.randomElement()!
+            decorator: Decorator.allCases.randomElement()!,
+            iconPrefix: IconPrefix.allCases.randomElement()!,
+            customFontName: names.randomElement()!
         )
     }
 
@@ -57,6 +60,7 @@ enum StyleOptionsPropertyTests {
             defaults.set("garbage-\(randomSuffix())", forKey: StyleOptions.fontSizeKey)
             defaults.set("garbage-\(randomSuffix())", forKey: StyleOptions.textColorKey)
             defaults.set("garbage-\(randomSuffix())", forKey: StyleOptions.decoratorKey)
+            defaults.set("garbage-\(randomSuffix())", forKey: StyleOptions.iconPrefixKey)
 
             let loaded = StyleOptions.load(from: defaults)
 
@@ -74,6 +78,9 @@ enum StyleOptionsPropertyTests {
             }
             guard Decorator.allCases.contains(loaded.decorator) else {
                 fatalError("FAIL: tolerant load produced invalid decorator at iteration \(i)")
+            }
+            guard IconPrefix.allCases.contains(loaded.iconPrefix) else {
+                fatalError("FAIL: tolerant load produced invalid iconPrefix at iteration \(i)")
             }
         }
         print("  ✓ Property 5 passed (100/100 iterations)")

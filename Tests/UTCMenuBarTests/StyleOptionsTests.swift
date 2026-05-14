@@ -14,6 +14,8 @@ enum StyleOptionsTests {
         guard d.fontSize == .standard else { fatalError("FAIL: default.fontSize should be .standard, got \(d.fontSize)") }
         guard d.textColor == .default else { fatalError("FAIL: default.textColor should be .default, got \(d.textColor)") }
         guard d.decorator == .none else { fatalError("FAIL: default.decorator should be .none, got \(d.decorator)") }
+        guard d.iconPrefix == .globe else { fatalError("FAIL: default.iconPrefix should be .globe, got \(d.iconPrefix)") }
+        guard d.customFontName == "" else { fatalError("FAIL: default.customFontName should be empty, got '\(d.customFontName)'") }
         print("  ✓ testDefaultValues passed")
     }
 
@@ -24,13 +26,17 @@ enum StyleOptionsTests {
             fontWeight: .bold,
             fontSize: .large,
             textColor: .blue,
-            decorator: .brackets
+            decorator: .brackets,
+            iconPrefix: .clock,
+            customFontName: "Helvetica"
         )
         guard s.fontFamily == .menlo else { fatalError("FAIL: fontFamily mismatch") }
         guard s.fontWeight == .bold else { fatalError("FAIL: fontWeight mismatch") }
         guard s.fontSize == .large else { fatalError("FAIL: fontSize mismatch") }
         guard s.textColor == .blue else { fatalError("FAIL: textColor mismatch") }
         guard s.decorator == .brackets else { fatalError("FAIL: decorator mismatch") }
+        guard s.iconPrefix == .clock else { fatalError("FAIL: iconPrefix mismatch") }
+        guard s.customFontName == "Helvetica" else { fatalError("FAIL: customFontName mismatch") }
         print("  ✓ testInitWithAllParams passed")
     }
 
@@ -57,7 +63,9 @@ enum StyleOptionsTests {
             fontWeight: .semibold,
             fontSize: .small,
             textColor: .purple,
-            decorator: .bars
+            decorator: .bars,
+            iconPrefix: .compass,
+            customFontName: "Times-Roman"
         )
         original.save(to: defaults)
         let loaded = StyleOptions.load(from: defaults)
@@ -97,6 +105,48 @@ enum StyleOptionsTests {
         print("  ✓ testLoadWithInvalidRawValuesReturnsDefaults passed")
     }
 
+    static func testIconPrefixDisplayAndRawValue() {
+        print("  Running: testIconPrefixDisplayAndRawValue...")
+        let pairs: [(IconPrefix, String, String)] = [
+            (.globe, "🌐 ", "地球仪"),
+            (.clock, "🕐 ", "时钟"),
+            (.compass, "🧭 ", "指南针"),
+            (.earth, "🌍 ", "地球"),
+            (.none, "", "无图标"),
+        ]
+        for (icon, prefix, name) in pairs {
+            guard icon.prefix == prefix else {
+                fatalError("FAIL: \(icon).prefix expected '\(prefix)', got '\(icon.prefix)'")
+            }
+            guard icon.displayName == name else {
+                fatalError("FAIL: \(icon).displayName expected '\(name)', got '\(icon.displayName)'")
+            }
+        }
+        guard IconPrefix.allCases.count == 5 else {
+            fatalError("FAIL: IconPrefix.allCases should have 5 cases, got \(IconPrefix.allCases.count)")
+        }
+        print("  ✓ testIconPrefixDisplayAndRawValue passed")
+    }
+
+    static func testLoadPreservesLegacyFontFamilyWithoutNewKeys() {
+        print("  Running: testLoadPreservesLegacyFontFamilyWithoutNewKeys...")
+        let suiteName = "com.utcmenubar.test.styleopts.legacy.\(ProcessInfo.processInfo.globallyUniqueString)"
+        guard let defaults = UserDefaults(suiteName: suiteName) else {
+            fatalError("FAIL: could not create UserDefaults suite")
+        }
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+
+        defaults.set(FontFamily.menlo.rawValue, forKey: StyleOptions.fontFamilyKey)
+        defaults.set(FontWeight.bold.rawValue, forKey: StyleOptions.fontWeightKey)
+
+        let loaded = StyleOptions.load(from: defaults)
+        guard loaded.fontFamily == .menlo else { fatalError("FAIL: legacy fontFamily lost: \(loaded.fontFamily)") }
+        guard loaded.fontWeight == .bold else { fatalError("FAIL: legacy fontWeight lost: \(loaded.fontWeight)") }
+        guard loaded.iconPrefix == .globe else { fatalError("FAIL: missing iconPrefix should default to .globe, got \(loaded.iconPrefix)") }
+        guard loaded.customFontName == "" else { fatalError("FAIL: missing customFontName should default to empty, got '\(loaded.customFontName)'") }
+        print("  ✓ testLoadPreservesLegacyFontFamilyWithoutNewKeys passed")
+    }
+
     static func runAll() {
         print("StyleOptions Unit Tests")
         print("=======================")
@@ -106,6 +156,8 @@ enum StyleOptionsTests {
         testSaveLoadRoundTripWithCustomDefaults()
         testLoadFromEmptyDefaultsReturnsDefault()
         testLoadWithInvalidRawValuesReturnsDefaults()
+        testIconPrefixDisplayAndRawValue()
+        testLoadPreservesLegacyFontFamilyWithoutNewKeys()
         print("\nAll StyleOptions unit tests passed ✓")
     }
 }

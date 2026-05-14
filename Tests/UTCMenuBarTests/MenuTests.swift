@@ -21,6 +21,7 @@ enum MenuTests {
             setFontWeight: nil,
             setFontSize: nil,
             setTextColor: nil,
+            setIconPrefix: nil,
             setDecorator: nil,
             showSettings: nil,
             quit: nil
@@ -70,7 +71,7 @@ enum MenuTests {
         guard let appearance = menu.items[4].submenu else {
             fatalError("FAIL: appearance submenu missing")
         }
-        let expected = ["字体", "字重", "字号", "颜色", "装饰"]
+        let expected = ["字体", "字重", "字号", "颜色", "图标", "装饰"]
         guard appearance.items.count == expected.count else {
             fatalError("FAIL: expected \(expected.count) appearance items, got \(appearance.items.count)")
         }
@@ -162,12 +163,31 @@ enum MenuTests {
         print("  ✓ testRadioForTextColor passed")
     }
 
+    static func testRadioForIconPrefix() {
+        print("  Running: testRadioForIconPrefix...")
+        for (i, icon) in IconPrefix.allCases.enumerated() {
+            var style = StyleOptions.default
+            style.iconPrefix = icon
+            let submenu = appearanceSubmenu(at: 4, style: style)
+            for (j, item) in submenu.items.enumerated() {
+                let expected: NSControl.StateValue = (i == j) ? .on : .off
+                guard item.state == expected else {
+                    fatalError("FAIL: iconPrefix=\(icon) item \(j) state \(item.state.rawValue) expected \(expected.rawValue)")
+                }
+                guard item.tag == j else {
+                    fatalError("FAIL: iconPrefix item \(j) tag \(item.tag) expected \(j)")
+                }
+            }
+        }
+        print("  ✓ testRadioForIconPrefix passed")
+    }
+
     static func testRadioForDecorator() {
         print("  Running: testRadioForDecorator...")
         for (i, decorator) in Decorator.allCases.enumerated() {
             var style = StyleOptions.default
             style.decorator = decorator
-            let submenu = appearanceSubmenu(at: 4, style: style)
+            let submenu = appearanceSubmenu(at: 5, style: style)
             for (j, item) in submenu.items.enumerated() {
                 let expected: NSControl.StateValue = (i == j) ? .on : .off
                 guard item.state == expected else {
@@ -176,6 +196,27 @@ enum MenuTests {
             }
         }
         print("  ✓ testRadioForDecorator passed")
+    }
+
+    static func testFontSubmenuIncludesCustom() {
+        print("  Running: testFontSubmenuIncludesCustom...")
+        let submenu = appearanceSubmenu(at: 0, style: .default)
+        let titles = submenu.items.map(\.title)
+        guard titles.contains("自定义…") else {
+            fatalError("FAIL: font submenu should include '自定义…' option, got titles \(titles)")
+        }
+        var style = StyleOptions.default
+        style.fontFamily = .custom
+        style.customFontName = "Helvetica"
+        let withCustom = appearanceSubmenu(at: 0, style: style)
+        let customIndex = FontFamily.allCases.firstIndex(of: .custom)!
+        guard withCustom.items[customIndex].title == "自定义：Helvetica" else {
+            fatalError("FAIL: custom font item title should reflect customFontName, got '\(withCustom.items[customIndex].title)'")
+        }
+        guard withCustom.items[customIndex].state == .on else {
+            fatalError("FAIL: custom font item should be checked when fontFamily=.custom")
+        }
+        print("  ✓ testFontSubmenuIncludesCustom passed")
     }
 
     static func runAll() {
@@ -188,7 +229,9 @@ enum MenuTests {
         testRadioForFontWeight()
         testRadioForFontSize()
         testRadioForTextColor()
+        testRadioForIconPrefix()
         testRadioForDecorator()
+        testFontSubmenuIncludesCustom()
         print("\nAll menu unit tests passed ✓")
     }
 }

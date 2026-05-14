@@ -9,13 +9,16 @@ final class SettingsWindowController: NSWindowController, NSWindowDelegate {
     private let fontWeightPopup    = NSPopUpButton()
     private let fontSizeSegmented  = NSSegmentedControl()
     private let textColorPopup     = NSPopUpButton()
+    private let iconPrefixPopup    = NSPopUpButton()
     private let decoratorPopup     = NSPopUpButton()
     private let previewLabel       = NSTextField(labelWithString: "")
+    private let onPickCustomFont:  () -> Void
 
-    init(store: StyleOptionsStore) {
+    init(store: StyleOptionsStore, onPickCustomFont: @escaping () -> Void = {}) {
         self.store = store
+        self.onPickCustomFont = onPickCustomFont
         let window = NSWindow(
-            contentRect: NSRect(x: 0, y: 0, width: 380, height: 260),
+            contentRect: NSRect(x: 0, y: 0, width: 380, height: 300),
             styleMask: [.titled, .closable],
             backing: .buffered, defer: false)
         window.title = "UTCMenuBar 设置"
@@ -31,6 +34,7 @@ final class SettingsWindowController: NSWindowController, NSWindowDelegate {
         configurePopup(fontFamilyPopup, titles: FontFamily.allCases.map(\.displayName))
         configurePopup(fontWeightPopup, titles: FontWeight.allCases.map(\.displayName))
         configurePopup(textColorPopup, titles: TextColorOption.allCases.map(\.displayName))
+        configurePopup(iconPrefixPopup, titles: IconPrefix.allCases.map(\.displayName))
         configurePopup(decoratorPopup, titles: Decorator.allCases.map(\.displayName))
 
         let sizeTitles = FontSize.allCases.map(\.displayName)
@@ -63,6 +67,7 @@ final class SettingsWindowController: NSWindowController, NSWindowDelegate {
             row("字重", fontWeightPopup),
             row("字号", fontSizeSegmented),
             row("颜色", textColorPopup),
+            row("图标", iconPrefixPopup),
             row("装饰", decoratorPopup),
             separator,
             previewStack,
@@ -93,9 +98,20 @@ final class SettingsWindowController: NSWindowController, NSWindowDelegate {
     }
 
     func refresh(from style: StyleOptions) {
+        let customIndex = SettingsViewModel.selectedIndex(FontFamily.custom)
+        let customTitle: String
+        if !style.customFontName.isEmpty {
+            customTitle = "自定义：\(style.customFontName)"
+        } else {
+            customTitle = FontFamily.custom.displayName
+        }
+        if let item = fontFamilyPopup.item(at: customIndex) {
+            item.title = customTitle
+        }
         fontFamilyPopup.selectItem(at: SettingsViewModel.selectedIndex(style.fontFamily))
         fontWeightPopup.selectItem(at: SettingsViewModel.selectedIndex(style.fontWeight))
         textColorPopup.selectItem(at: SettingsViewModel.selectedIndex(style.textColor))
+        iconPrefixPopup.selectItem(at: SettingsViewModel.selectedIndex(style.iconPrefix))
         decoratorPopup.selectItem(at: SettingsViewModel.selectedIndex(style.decorator))
         fontSizeSegmented.selectedSegment = SettingsViewModel.selectedIndex(style.fontSize)
         previewLabel.attributedStringValue = SettingsViewModel.previewAttributedString(style: style)
@@ -104,11 +120,18 @@ final class SettingsWindowController: NSWindowController, NSWindowDelegate {
     @objc private func popupChanged(_ sender: NSPopUpButton) {
         let i = sender.indexOfSelectedItem
         if sender === fontFamilyPopup, let v = SettingsViewModel.value(at: i, of: FontFamily.self) {
-            store.update { $0.fontFamily = v }
+            if v == .custom {
+                onPickCustomFont()
+                refresh(from: store.current)
+            } else {
+                store.update { $0.fontFamily = v }
+            }
         } else if sender === fontWeightPopup, let v = SettingsViewModel.value(at: i, of: FontWeight.self) {
             store.update { $0.fontWeight = v }
         } else if sender === textColorPopup, let v = SettingsViewModel.value(at: i, of: TextColorOption.self) {
             store.update { $0.textColor = v }
+        } else if sender === iconPrefixPopup, let v = SettingsViewModel.value(at: i, of: IconPrefix.self) {
+            store.update { $0.iconPrefix = v }
         } else if sender === decoratorPopup, let v = SettingsViewModel.value(at: i, of: Decorator.self) {
             store.update { $0.decorator = v }
         }

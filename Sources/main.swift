@@ -8,6 +8,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     private var displayOptions = DisplayOptions.default
     private let styleStore = StyleOptionsStore()
     private var settingsWindowController: SettingsWindowController?
+    private var fontPanelDelegate: FontPanelDelegate?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
@@ -39,6 +40,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             setFontWeight: #selector(setFontWeight(_:)),
             setFontSize: #selector(setFontSize(_:)),
             setTextColor: #selector(setTextColor(_:)),
+            setIconPrefix: #selector(setIconPrefix(_:)),
             setDecorator: #selector(setDecorator(_:)),
             showSettings: #selector(showSettings),
             quit: #selector(quit)
@@ -46,7 +48,11 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     private func updateTime() {
-        let plain = TimeFormatter.formatDisplay(date: Date(), options: displayOptions)
+        let plain = TimeFormatter.formatDisplay(
+            date: Date(),
+            options: displayOptions,
+            iconPrefix: styleStore.current.iconPrefix
+        )
         let styled = StyledTextBuilder.buildAttributedString(text: plain, style: styleStore.current)
         guard let button = statusItem.button else { return }
         button.title = styled.string
@@ -76,7 +82,36 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     @objc private func setFontFamily(_ sender: NSMenuItem) {
         guard let v = FontFamily.allCases[safe: sender.tag] else { return }
+        if v == .custom {
+            presentFontPanel()
+            return
+        }
         styleStore.update { $0.fontFamily = v }
+    }
+
+    @objc private func setIconPrefix(_ sender: NSMenuItem) {
+        guard let v = IconPrefix.allCases[safe: sender.tag] else { return }
+        styleStore.update { $0.iconPrefix = v }
+    }
+
+    func presentFontPanel() {
+        let manager = NSFontManager.shared
+        let style = styleStore.current
+        let initial = StyledTextBuilder.resolveFont(
+            family: style.fontFamily,
+            weight: style.fontWeight,
+            size: style.fontSize,
+            customFontName: style.customFontName
+        )
+        manager.setSelectedFont(initial, isMultiple: false)
+        if fontPanelDelegate == nil {
+            fontPanelDelegate = FontPanelDelegate(store: styleStore)
+        }
+        manager.target = fontPanelDelegate
+        manager.action = #selector(FontPanelDelegate.changeFont(_:))
+        NSApp.activate(ignoringOtherApps: true)
+        let panel = NSFontPanel.shared
+        panel.makeKeyAndOrderFront(nil)
     }
 
     @objc private func setFontWeight(_ sender: NSMenuItem) {
@@ -101,7 +136,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     @objc private func showSettings() {
         if settingsWindowController == nil {
-            settingsWindowController = SettingsWindowController(store: styleStore)
+            settingsWindowController = SettingsWindowController(store: styleStore) { [weak self] in
+                self?.presentFontPanel()
+            }
             _ = settingsWindowController!.window
         }
         NSApp.activate(ignoringOtherApps: true)
@@ -115,6 +152,32 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
 extension Array {
     fileprivate subscript(safe i: Int) -> Element? { indices.contains(i) ? self[i] : nil }
+}
+
+@MainActor
+final class FontPanelDelegate: NSObject {
+    private let store: StyleOptionsStore
+
+    init(store: StyleOptionsStore) {
+        self.store = store
+    }
+
+    @objc func changeFont(_ sender: Any?) {
+        let manager = (sender as? NSFontManager) ?? NSFontManager.shared
+        let style = store.current
+        let current = StyledTextBuilder.resolveFont(
+            family: style.fontFamily,
+            weight: style.fontWeight,
+            size: style.fontSize,
+            customFontName: style.customFontName
+        )
+        let picked = manager.convert(current)
+        let name = picked.fontName
+        store.update {
+            $0.fontFamily = .custom
+            $0.customFontName = name
+        }
+    }
 }
 
 let app = NSApplication.shared

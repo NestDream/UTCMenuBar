@@ -15,6 +15,7 @@ enum MenuPropertyTests {
             setFontWeight: nil,
             setFontSize: nil,
             setTextColor: nil,
+            setIconPrefix: nil,
             setDecorator: nil,
             showSettings: nil,
             quit: nil
@@ -27,7 +28,9 @@ enum MenuPropertyTests {
             fontWeight: FontWeight.allCases.randomElement()!,
             fontSize: FontSize.allCases.randomElement()!,
             textColor: TextColorOption.allCases.randomElement()!,
-            decorator: Decorator.allCases.randomElement()!
+            decorator: Decorator.allCases.randomElement()!,
+            iconPrefix: IconPrefix.allCases.randomElement()!,
+            customFontName: ""
         )
     }
 
@@ -89,6 +92,7 @@ enum MenuPropertyTests {
                 ("字重", FontWeight.allCases.firstIndex(of: style.fontWeight)!),
                 ("字号", FontSize.allCases.firstIndex(of: style.fontSize)!),
                 ("颜色", TextColorOption.allCases.firstIndex(of: style.textColor)!),
+                ("图标", IconPrefix.allCases.firstIndex(of: style.iconPrefix)!),
                 ("装饰", Decorator.allCases.firstIndex(of: style.decorator)!),
             ]
             for (j, (name, expectedIndex)) in expected.enumerated() {

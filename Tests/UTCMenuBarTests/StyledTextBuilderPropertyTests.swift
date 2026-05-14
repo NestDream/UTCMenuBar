@@ -6,12 +6,15 @@ import UTCMenuBarLib
 enum StyledTextBuilderPropertyTests {
 
     private static func randomStyleOptions() -> StyleOptions {
-        StyleOptions(
+        let names = ["", "Helvetica", "Times-Roman", "Courier"]
+        return StyleOptions(
             fontFamily: FontFamily.allCases.randomElement()!,
             fontWeight: FontWeight.allCases.randomElement()!,
             fontSize: FontSize.allCases.randomElement()!,
             textColor: TextColorOption.allCases.randomElement()!,
-            decorator: Decorator.allCases.randomElement()!
+            decorator: Decorator.allCases.randomElement()!,
+            iconPrefix: IconPrefix.allCases.randomElement()!,
+            customFontName: names.randomElement()!
         )
     }
 

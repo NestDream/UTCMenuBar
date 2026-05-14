@@ -67,3 +67,24 @@
 - [x] 9.1 更新 requirements.md：术语表加入 Decorator/StyleOptionsStore/SettingsWindowController；需求 5 改为基于 Decorator 枚举与单一 UserDefaults 键；新增需求 10（设置窗口）
 - [x] 9.2 更新 design.md：StyleOptions 字段 `prefix`/`suffix` → `decorator: Decorator`；新增 StyleOptionsStore / SettingsViewModel / SettingsWindowController 组件章节；菜单结构图从 5 项更新为 8 项；属性 1 限定 prefix/suffix 来源于 Decorator 计算属性；新增属性 9（设置窗口控件 ↔ store 一致性）
 - [x] 9.3 更新 tasks.md：将原任务 1.x–5.x 全部标记 `[x]`；新增任务 6（store）、7（SettingsViewModel + tests）、8（SettingsWindowController + 接线）、9（本任务）
+
+## 任务 10：图标前缀（需求 11）
+
+- [x] 10.1 在 UTCMenuBarLib/StyleOptions.swift 中定义 `IconPrefix` 枚举（globe/clock/compass/earth/none），含 `displayName` 与 `prefix` 计算属性（_需求 11.1, 11.2, 11.3, 11.4_）
+- [x] 10.2 为 StyleOptions 新增 `iconPrefix: IconPrefix` 字段（默认 `.globe`）以及 `iconPrefixKey`，更新 `init / save / load / default`（_需求 11.5, 11.6_）
+- [x] 10.3 修改 `TimeFormatter.formatDisplay` 签名，新增 `iconPrefix: IconPrefix = .globe` 参数；用 `iconPrefix.prefix` 替换硬编码的 `"🌐 "`（_需求 11.9_）
+- [x] 10.4 在 `MenuBuilder.buildAppearanceSubmenu` 中插入"图标"子菜单（位于"颜色"与"装饰"之间），并在 `buildMenu` 签名加入 `setIconPrefix: Selector?`（_需求 11.1, 11.7, 11.8_）
+- [x] 10.5 AppDelegate 新增 `@objc setIconPrefix(_:)` 动作，调用 `styleStore.update { $0.iconPrefix = v }`；`updateTime()` 把 `styleStore.current.iconPrefix` 传给 `formatDisplay`
+- [x] 10.6 SettingsWindowController 新增 `iconPrefixPopup`（NSPopUpButton），加入到 stack view，在 `refresh(from:)` 与 `popupChanged(_:)` 中处理同步（_需求 11.7_）
+- [x] 10.7 扩展 StyleOptionsTests / StyleOptionsPropertyTests / TimeFormatterTests / MenuTests / MenuPropertyTests 覆盖 IconPrefix 的默认值、持久化往返、容错加载、TimeFormatter 输出、菜单顺序与 radio 状态
+
+## 任务 11：自定义字体（需求 12）
+
+- [x] 11.1 在 `FontFamily` 中新增 `case custom = "custom"`，`displayName` 返回 `"自定义…"`（_需求 12.1, 12.5_）
+- [x] 11.2 为 StyleOptions 新增 `customFontName: String = ""` 字段以及 `customFontNameKey`，更新 `init / save / load / default`（_需求 12.2, 12.8_）
+- [x] 11.3 扩展 `StyledTextBuilder.resolveFont` 接受可选 `customFontName`，新增 `.custom` 分支：非空且字体存在时使用，否则回退到 `NSFont.systemFont`（_需求 12.3, 12.4_）
+- [x] 11.4 `MenuBuilder` 字体子菜单 displayName 改为闭包：当 `family == .custom && !customFontName.isEmpty` 时显示 `"自定义：<name>"`（_需求 12.5_）
+- [x] 11.5 AppDelegate 新增 `presentFontPanel()` 与 `FontPanelDelegate`：选中 `.custom` 时打开 NSFontPanel，并在 `changeFont(_:)` 通过 `manager.convert` 拿到选定字体并 `store.update { fontFamily = .custom; customFontName = picked.fontName }`（_需求 12.6, 12.7, 12.9_）
+- [x] 11.6 `SettingsWindowController` 接受 `onPickCustomFont` 闭包；popup 选中 `.custom` 时调用闭包；`refresh(from:)` 重写 popup item 标题以反映 `customFontName`（_需求 12.5, 12.6_）
+- [x] 11.7 `main.swift` 在 `showSettings()` 中把 `presentFontPanel` 注入 `SettingsWindowController`
+- [x] 11.8 扩展 StyledTextBuilderTests 覆盖 `.custom` 三条路径（空名回退、无效名回退、有效名解析）；扩展 MenuTests 覆盖字体子菜单包含 `自定义…`/`自定义：<name>` 标签

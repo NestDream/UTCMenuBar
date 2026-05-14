@@ -139,3 +139,35 @@
 7. WHEN 用户通过外观子菜单改变样式, THE 设置窗口（若已打开）SHALL 自动同步控件选中状态与预览
 8. THE 设置窗口 SHALL 设置 `isReleasedWhenClosed = false`，关闭后再次触发"设置…"时复用同一控制器实例
 9. THE MenuBarApp SHALL 始终保持 `NSApplication.activationPolicy == .accessory`（即不在 Dock 中出现），打开/关闭设置窗口不改变此策略
+
+### 需求 11：图标前缀
+
+**用户故事：** 作为用户，我希望能够更换或移除菜单栏文本起始的图标，以便在视觉上更进一步区分 UTC 时间，或在菜单栏空间紧张时隐藏图标。
+
+#### 验收标准
+
+1. THE MenuBarApp SHALL 在外观子菜单中提供"图标"子菜单，包含 `IconPrefix` 枚举的全部 case：`.globe`（地球仪）、`.clock`（时钟）、`.compass`（指南针）、`.earth`（地球）、`.none`（无图标）
+2. WHEN 用户选择 `.globe`, THE MenuBarApp SHALL 使用 "🌐 " 作为前缀（即原默认值，保持向后兼容）
+3. WHEN 用户选择 `.clock`/`.compass`/`.earth`, THE MenuBarApp SHALL 分别使用 "🕐 "/"🧭 "/"🌍 " 作为前缀
+4. WHEN 用户选择 `.none`, THE MenuBarApp SHALL 不在文本前添加任何字符（前缀为空字符串）
+5. THE MenuBarApp SHALL 默认使用 `.globe`
+6. THE MenuBarApp SHALL 通过单一 UserDefaults 键 `styleOptions.iconPrefix` 持久化所选 case 的 rawValue
+7. THE 设置窗口 SHALL 包含与"图标"子菜单等价的 NSPopUpButton，与 store 双向同步
+8. THE MenuBarApp SHALL 在图标子菜单中对当前选中的 case 显示勾选标记
+9. THE MenuBarApp SHALL 保持 " UTC" 后缀不变；图标前缀仅替换文本起始部分
+
+### 需求 12：自定义字体
+
+**用户故事：** 作为用户，除了系统预设的字体族外，我希望能够选择系统中已安装的任意字体来渲染菜单栏 UTC 时间，以便最大程度地与系统时钟视觉区分。
+
+#### 验收标准
+
+1. THE MenuBarApp SHALL 在 `FontFamily` 枚举中新增 `.custom` case（rawValue `"custom"`），与既有的 `.system / .menlo / .sfMono` 并列
+2. THE StyleOptions SHALL 新增 `customFontName: String` 字段，默认 `""`，通过 UserDefaults 键 `styleOptions.customFontName` 持久化
+3. WHEN `fontFamily == .custom` 且 `customFontName` 非空且系统存在该字体, THE StyledTextBuilder SHALL 使用该字体渲染（保留当前 `FontWeight`/`FontSize`）
+4. IF `fontFamily == .custom` 且 `customFontName` 为空或字体在系统中不存在, THEN THE StyledTextBuilder SHALL 回退到系统字体（`NSFont.systemFont`）
+5. THE MenuBarApp SHALL 在字体子菜单和设置窗口的字体下拉框最末位置显示 "自定义…" 项；当 `fontFamily == .custom` 且 `customFontName` 非空时，标签显示为 "自定义：<fontName>"
+6. WHEN 用户在字体子菜单或设置窗口选择 "自定义…" 项, THE MenuBarApp SHALL 调用 `NSFontPanel.shared.makeKeyAndOrderFront(nil)` 弹出系统字体面板（同时通过 `NSFontManager` 设置当前选中字体）
+7. WHEN 用户在字体面板中选定一个字体, THE MenuBarApp SHALL 通过 `StyleOptionsStore.update` 同时写入 `fontFamily = .custom` 与 `customFontName = picked.fontName`
+8. THE MenuBarApp SHALL 保持既有 `styleOptions.fontFamily` 持久化向后兼容：旧用户存储的 `.menlo` 等 rawValue 在升级后仍能正确加载
+9. WHEN `fontFamily == .custom` 时, THE 字体子菜单 SHALL 把勾选标记显示在 "自定义…" 项上

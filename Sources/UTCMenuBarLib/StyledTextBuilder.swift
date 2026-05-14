@@ -7,7 +7,12 @@ public enum StyledTextBuilder {
     /// - Always sets `.font`
     /// - Sets `.foregroundColor` only when `style.textColor != .default`
     public static func buildAttributedString(text: String, style: StyleOptions) -> NSAttributedString {
-        let font = resolveFont(family: style.fontFamily, weight: style.fontWeight, size: style.fontSize)
+        let font = resolveFont(
+            family: style.fontFamily,
+            weight: style.fontWeight,
+            size: style.fontSize,
+            customFontName: style.customFontName
+        )
         var attributes: [NSAttributedString.Key: Any] = [.font: font]
         if let color = resolveColor(option: style.textColor) {
             attributes[.foregroundColor] = color
@@ -16,7 +21,12 @@ public enum StyledTextBuilder {
         return NSAttributedString(string: decorated, attributes: attributes)
     }
 
-    public static func resolveFont(family: FontFamily, weight: FontWeight, size: FontSize) -> NSFont {
+    public static func resolveFont(
+        family: FontFamily,
+        weight: FontWeight,
+        size: FontSize,
+        customFontName: String = ""
+    ) -> NSFont {
         let pt = size.pointSize
         switch family {
         case .system:
@@ -28,6 +38,12 @@ public enum StyledTextBuilder {
             return NSFont.monospacedSystemFont(ofSize: pt, weight: weight.nsWeight)
         case .sfMono:
             return NSFont.monospacedSystemFont(ofSize: pt, weight: weight.nsWeight)
+        case .custom:
+            let trimmed = customFontName.trimmingCharacters(in: .whitespacesAndNewlines)
+            if !trimmed.isEmpty, let f = NSFont(name: trimmed, size: pt) {
+                return applyWeight(to: f, weight: weight)
+            }
+            return NSFont.systemFont(ofSize: pt, weight: weight.nsWeight)
         }
     }
 

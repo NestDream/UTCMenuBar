@@ -115,6 +115,46 @@ enum StyledTextBuilderTests {
         print("  ✓ testResolveFontMenlo passed")
     }
 
+    static func testResolveFontCustomFallsBackWhenEmpty() {
+        print("  Running: testResolveFontCustomFallsBackWhenEmpty...")
+        let f = StyledTextBuilder.resolveFont(family: .custom, weight: .regular, size: .standard, customFontName: "")
+        guard f.pointSize == FontSize.standard.pointSize else {
+            fatalError("FAIL: empty customFontName should fall back; pointSize wrong")
+        }
+        print("  ✓ testResolveFontCustomFallsBackWhenEmpty passed")
+    }
+
+    static func testResolveFontCustomFallsBackWhenInvalid() {
+        print("  Running: testResolveFontCustomFallsBackWhenInvalid...")
+        let f = StyledTextBuilder.resolveFont(
+            family: .custom,
+            weight: .regular,
+            size: .large,
+            customFontName: "ThisFontDoesNotExistXYZ123"
+        )
+        guard f.pointSize == FontSize.large.pointSize else {
+            fatalError("FAIL: invalid customFontName should fall back to system font")
+        }
+        print("  ✓ testResolveFontCustomFallsBackWhenInvalid passed")
+    }
+
+    static func testResolveFontCustomUsesNameWhenValid() {
+        print("  Running: testResolveFontCustomUsesNameWhenValid...")
+        let f = StyledTextBuilder.resolveFont(
+            family: .custom,
+            weight: .regular,
+            size: .standard,
+            customFontName: "Helvetica"
+        )
+        guard f.pointSize == FontSize.standard.pointSize else {
+            fatalError("FAIL: pointSize wrong for custom Helvetica")
+        }
+        guard f.fontName.contains("Helvetica") else {
+            fatalError("FAIL: custom font should be Helvetica family, got '\(f.fontName)'")
+        }
+        print("  ✓ testResolveFontCustomUsesNameWhenValid passed")
+    }
+
     static func testResolveColorAllCases() {
         print("  Running: testResolveColorAllCases...")
         guard StyledTextBuilder.resolveColor(option: .default) == nil else {
@@ -150,6 +190,9 @@ enum StyledTextBuilderTests {
         testResolveFontSystem()
         testResolveFontSFMono()
         testResolveFontMenlo()
+        testResolveFontCustomFallsBackWhenEmpty()
+        testResolveFontCustomFallsBackWhenInvalid()
+        testResolveFontCustomUsesNameWhenValid()
         testResolveColorAllCases()
         print("\nAll StyledTextBuilder unit tests passed ✓")
     }

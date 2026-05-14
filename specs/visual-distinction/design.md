@@ -989,3 +989,113 @@ statusItem.button?.attributedTitle = styledText
 - 切换任何选项后立即生效，无需确认；变更经由 `StyleOptionsStore.update`
 - 使用 `NSMenuItem.tag` 存储 case 在 `T.allCases` 中的索引，`@objc` action 通过 `sender.tag` 与 `Array(T.allCases)[safe: tag]` 反查回枚举值
 - "设置…"项的 `keyEquivalent == ","`，`keyEquivalentModifierMask` 包含 `.command`（即 `⌘,`）
+
+## 需求 11 设计：图标前缀
+
+### IconPrefix 枚举
+
+```swift
+public enum IconPrefix: String, CaseIterable, Sendable {
+    case globe = "globe"
+    case clock = "clock"
+    case compass = "compass"
+    case earth = "earth"
+    case none = "none"
+
+    public var displayName: String   // "地球仪" / "时钟" / "指南针" / "地球" / "无图标"
+    public var prefix: String        // "🌐 " / "🕐 " / "🧭 " / "🌍 " / ""
+}
+```
+
+`prefix` 是计算属性，包含图标后的空格（与历史 "🌐 " 行为一致）；`.none` 返回空字符串。`StyleOptions` 新增 `iconPrefix: IconPrefix` 字段，默认 `.globe`，通过 UserDefaults 键 `styleOptions.iconPrefix` 持久化。
+
+### TimeFormatter API 变更
+
+`formatDisplay(date:options:)` 增加可选参数 `iconPrefix: IconPrefix = .globe`。默认值保证既有调用点（含测试）不变；前缀来自 `iconPrefix.prefix`，替换原硬编码的 `"🌐 "`。
+
+```swift
+public static func formatDisplay(
+    date: Date,
+    options: DisplayOptions,
+    iconPrefix: IconPrefix = .globe
+) -> String
+```
+
+设计原则：图标是**内容**（与 " UTC" 后缀同层），由 `TimeFormatter` 拼接；不是 `StyledTextBuilder` 的视觉装饰。
+
+### 外观子菜单更新
+
+外观子菜单从 5 项扩展为 6 项：字体、字重、字号、颜色、**图标**、装饰。"图标"插入在颜色与装饰之间，对应一个 radio 子菜单（5 项 = `IconPrefix.allCases`）。设置窗口同步增加一行 `row("图标", iconPrefixPopup)`。
+
+## 需求 12 设计：自定义字体
+
+### FontFamily 扩展
+
+```swift
+public enum FontFamily: String, CaseIterable, Sendable {
+    case system = "system"
+    case menlo = "Menlo"
+    case sfMono = "SF Mono"
+    case custom = "custom"     // 新增
+
+    public var displayName: String {
+        // ... .custom: return "自定义…"
+    }
+}
+```
+
+`.custom` 作为新 case 追加到 `allCases` 末尾，旧 `rawValue`（"system"/"Menlo"/"SF Mono"）持久化向后兼容。`StyleOptions` 新增 `customFontName: String` 字段（默认 `""`），UserDefaults 键 `styleOptions.customFontName`。该字段仅在 `fontFamily == .custom` 时生效。
+
+### StyledTextBuilder.resolveFont 扩展
+
+```swift
+public static func resolveFont(
+    family: FontFamily,
+    weight: FontWeight,
+    size: FontSize,
+    customFontName: String = ""
+) -> NSFont {
+    let pt = size.pointSize
+    switch family {
+    // ...原有 case 不变...
+    case .custom:
+        let trimmed = customFontName.trimmingCharacters(in: .whitespacesAndNewlines)
+        if !trimmed.isEmpty, let f = NSFont(name: trimmed, size: pt) {
+            return applyWeight(to: f, weight: weight)
+        }
+        return NSFont.systemFont(ofSize: pt, weight: weight.nsWeight)
+    }
+}
+```
+
+`buildAttributedString` 内部把 `style.customFontName` 转发给 `resolveFont`。回退路径与 `.menlo` 类似，但回退到普通 system font 而非等宽 system font，因为自定义意图通常不是等宽。
+
+### 字体面板交互
+
+字体子菜单与设置窗口字体下拉框均把"自定义…"作为最后一项渲染。点击该项不会直接把 `fontFamily` 写为 `.custom`，而是触发：
+
+1. 通过 `NSFontManager.setSelectedFont(_:isMultiple:)` 把当前已解析字体作为初始值
+2. 把一个 `FontPanelDelegate` 注册为 `NSFontManager.target`，`changeFont(_:)` 作为 action
+3. 调用 `NSFontPanel.shared.makeKeyAndOrderFront(nil)` 弹出系统字体面板
+
+`FontPanelDelegate.changeFont(_:)` 通过 `manager.convert(currentFont)` 取得用户选定的新字体，调用 `store.update { $0.fontFamily = .custom; $0.customFontName = picked.fontName }`。listener 链统一刷新菜单 / attributedTitle / 设置窗口预览。
+
+设置窗口字体下拉框中"自定义…"项的标题在 `refresh(from:)` 中按需重写为 `"自定义：\(customFontName)"`，菜单栏字体子菜单同理（在 `MenuBuilder` 中通过 displayName 闭包动态计算）。
+
+### 持久化兼容性
+
+| 升级前 | 升级后 load() 行为 |
+|--------|-------------------|
+| `fontFamily=menlo`, 无 `customFontName` 键 | `fontFamily=.menlo`, `customFontName=""` |
+| `fontFamily=custom`, `customFontName="Helvetica"` | 完整还原 |
+| `fontFamily=custom`, `customFontName=""` 或缺失 | `.custom` 保留，但 `resolveFont` 在渲染时回退到 system font |
+
+`load()` 中 `defaults.string(forKey: customFontNameKey) ?? ""` 保证缺失键不抛错。空白名也会进入回退路径。
+
+### 属性 10：图标前缀作用于 TimeFormatter 输出起始
+
+*对于任意* `Date` 与 `DisplayOptions`，`formatDisplay(date:options:iconPrefix: p)` 的输出以 `p.prefix` 起始，并以 `" UTC"` 结尾；其他部分（日期、时间、空格分隔）与既有行为一致。当 `p == .none` 时输出不含图标字符。
+
+### 属性 11：自定义字体回退保持 pointSize 正确
+
+*对于任意* `FontWeight` 与 `FontSize`，无论 `customFontName` 是否有效，`resolveFont(family: .custom, weight:, size:, customFontName:)` 始终返回非 nil 的 `NSFont` 且其 `pointSize == size.pointSize`。这保证用户输入无效字体名时菜单栏不会渲染异常。
