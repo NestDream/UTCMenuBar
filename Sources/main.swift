@@ -48,8 +48,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     private func updateTime() {
         let plain = TimeFormatter.formatDisplay(date: Date(), options: displayOptions)
         let styled = StyledTextBuilder.buildAttributedString(text: plain, style: styleStore.current)
-        statusItem.button?.attributedTitle = styled
-        statusItem.button?.title = ""
+        guard let button = statusItem.button else { return }
+        button.title = styled.string
+        button.attributedTitle = styled
     }
 
     @objc private func toggleShowDate() {

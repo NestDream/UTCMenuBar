@@ -22,13 +22,12 @@ final class SettingsWindowController: NSWindowController, NSWindowDelegate {
         window.isReleasedWhenClosed = false
         super.init(window: window)
         window.delegate = self
+        setupContent()
     }
 
     required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
 
-    override func windowDidLoad() {
-        super.windowDidLoad()
-
+    private func setupContent() {
         configurePopup(fontFamilyPopup, titles: FontFamily.allCases.map(\.displayName))
         configurePopup(fontWeightPopup, titles: FontWeight.allCases.map(\.displayName))
         configurePopup(textColorPopup, titles: TextColorOption.allCases.map(\.displayName))
