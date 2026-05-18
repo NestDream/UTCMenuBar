@@ -12,19 +12,37 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     private var settingsWindowController: SettingsWindowController?
     private var converterWindowController: TimezoneConverterWindowController?
     private var fontPanelDelegate: FontPanelDelegate?
+    private var popoverController: PopoverController?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
         displayOptions = DisplayOptions.load()
 
+        // Configure status item button for click handling (no persistent menu)
+        if let button = statusItem.button {
+            button.target = self
+            button.action = #selector(statusItemClicked(_:))
+            button.sendAction(on: [.leftMouseUp, .rightMouseUp])
+        }
+
+        // Initialize popover controller
+        popoverController = PopoverController(
+            statusItem: statusItem,
+            styleStore: styleStore,
+            languageStore: languageStore,
+            displayOptionsProvider: { [weak self] in self?.displayOptions ?? .default },
+            onShowSettings: { [weak self] in self?.showSettings() },
+            onShowConverter: { [weak self] in self?.showTimezoneConverter() },
+            onQuit: { [weak self] in self?.quit() }
+        )
+
         styleStore.addListener { [weak self] _ in
             guard let self else { return }
-            self.buildMenu()
             self.updateTime()
         }
 
         languageStore.addListener { [weak self] _ in
-            self?.buildMenu()
+            _ = self  // kept for future use; no menu rebuild needed
         }
 
         updateTime()
@@ -32,11 +50,25 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             Task { @MainActor in self?.updateTime() }
         }
         RunLoop.current.add(timer!, forMode: .common)
-        buildMenu()
     }
 
-    private func buildMenu() {
-        statusItem.menu = MenuBuilder.buildMenu(
+    @objc private func statusItemClicked(_ sender: Any?) {
+        guard let event = NSApp.currentEvent else { return }
+        if event.type == .rightMouseUp {
+            // Show classic NSMenu on right-click
+            let menu = buildMenu()
+            statusItem.menu = menu
+            statusItem.button?.performClick(nil)
+            statusItem.menu = nil
+        } else {
+            // Left-click toggles the popover
+            popoverController?.toggle()
+        }
+    }
+
+    @discardableResult
+    private func buildMenu() -> NSMenu {
+        return MenuBuilder.buildMenu(
             options: displayOptions,
             styleOptions: styleStore.current,
             language: languageStore.current,
@@ -72,21 +104,18 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     @objc private func toggleShowDate() {
         displayOptions.showDate.toggle()
         displayOptions.save()
-        buildMenu()
         updateTime()
     }
 
     @objc private func toggleCompactTime() {
         displayOptions.compactTime.toggle()
         displayOptions.save()
-        buildMenu()
         updateTime()
     }
 
     @objc private func toggleCompactDate() {
         displayOptions.compactDate.toggle()
         displayOptions.save()
-        buildMenu()
         updateTime()
     }
 
