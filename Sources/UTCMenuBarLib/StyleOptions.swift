@@ -6,12 +6,12 @@ public enum FontFamily: String, CaseIterable, Sendable {
     case sfMono = "SF Mono"
     case custom = "custom"
 
-    public var displayName: String {
+    public func displayName(for language: AppLanguage) -> String {
         switch self {
-        case .system: return "系统字体"
-        case .menlo: return "Menlo（等宽）"
-        case .sfMono: return "SF Mono（等宽）"
-        case .custom: return "自定义…"
+        case .system: return Strings.t(.fontFamilySystem, language: language)
+        case .menlo: return Strings.t(.fontFamilyMenlo, language: language)
+        case .sfMono: return Strings.t(.fontFamilySFMono, language: language)
+        case .custom: return Strings.t(.fontFamilyCustom, language: language)
         }
     }
 }
@@ -22,12 +22,12 @@ public enum FontWeight: String, CaseIterable, Sendable {
     case semibold
     case bold
 
-    public var displayName: String {
+    public func displayName(for language: AppLanguage) -> String {
         switch self {
-        case .regular: return "常规"
-        case .medium: return "中等"
-        case .semibold: return "半粗"
-        case .bold: return "粗体"
+        case .regular: return Strings.t(.fontWeightRegular, language: language)
+        case .medium: return Strings.t(.fontWeightMedium, language: language)
+        case .semibold: return Strings.t(.fontWeightSemibold, language: language)
+        case .bold: return Strings.t(.fontWeightBold, language: language)
         }
     }
 
@@ -46,11 +46,11 @@ public enum FontSize: String, CaseIterable, Sendable {
     case standard
     case large
 
-    public var displayName: String {
+    public func displayName(for language: AppLanguage) -> String {
         switch self {
-        case .small: return "小"
-        case .standard: return "标准"
-        case .large: return "大"
+        case .small: return Strings.t(.fontSizeSmall, language: language)
+        case .standard: return Strings.t(.fontSizeStandard, language: language)
+        case .large: return Strings.t(.fontSizeLarge, language: language)
         }
     }
 
@@ -72,14 +72,14 @@ public enum TextColorOption: String, CaseIterable, Sendable {
     case purple
     case red
 
-    public var displayName: String {
+    public func displayName(for language: AppLanguage) -> String {
         switch self {
-        case .default: return "默认"
-        case .blue: return "蓝色"
-        case .green: return "绿色"
-        case .orange: return "橙色"
-        case .purple: return "紫色"
-        case .red: return "红色"
+        case .default: return Strings.t(.colorDefault, language: language)
+        case .blue: return Strings.t(.colorBlue, language: language)
+        case .green: return Strings.t(.colorGreen, language: language)
+        case .orange: return Strings.t(.colorOrange, language: language)
+        case .purple: return Strings.t(.colorPurple, language: language)
+        case .red: return Strings.t(.colorRed, language: language)
         }
     }
 
@@ -104,13 +104,13 @@ public enum IconPrefix: String, CaseIterable, Sendable {
 
     public static let `default` = IconPrefix.globe
 
-    public var displayName: String {
+    public func displayName(for language: AppLanguage) -> String {
         switch self {
-        case .globe: return "地球仪"
-        case .clock: return "时钟"
-        case .compass: return "指南针"
-        case .earth: return "地球"
-        case .none: return "无图标"
+        case .globe: return Strings.t(.iconGlobe, language: language)
+        case .clock: return Strings.t(.iconClock, language: language)
+        case .compass: return Strings.t(.iconCompass, language: language)
+        case .earth: return Strings.t(.iconEarth, language: language)
+        case .none: return Strings.t(.iconNone, language: language)
         }
     }
 
@@ -131,12 +131,12 @@ public enum Decorator: String, CaseIterable, Sendable {
     case parentheses
     case bars
 
-    public var displayName: String {
+    public func displayName(for language: AppLanguage) -> String {
         switch self {
-        case .none: return "无装饰"
-        case .brackets: return "[方括号]"
-        case .parentheses: return "(圆括号)"
-        case .bars: return "│竖线│"
+        case .none: return Strings.t(.decoratorNone, language: language)
+        case .brackets: return Strings.t(.decoratorBrackets, language: language)
+        case .parentheses: return Strings.t(.decoratorParentheses, language: language)
+        case .bars: return Strings.t(.decoratorBars, language: language)
         }
     }
 

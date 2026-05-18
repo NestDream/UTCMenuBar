@@ -3,10 +3,11 @@ import UTCMenuBarLib
 
 enum MenuPropertyTests {
 
-    private static func build(options: DisplayOptions, style: StyleOptions = .default) -> NSMenu {
+    private static func build(options: DisplayOptions, style: StyleOptions = .default, language: AppLanguage = .zh) -> NSMenu {
         MenuBuilder.buildMenu(
             options: options,
             styleOptions: style,
+            language: language,
             target: nil,
             toggleShowDate: nil,
             toggleCompactTime: nil,
@@ -17,6 +18,7 @@ enum MenuPropertyTests {
             setTextColor: nil,
             setIconPrefix: nil,
             setDecorator: nil,
+            setLanguage: nil,
             showSettings: nil,
             quit: nil
         )
@@ -94,6 +96,7 @@ enum MenuPropertyTests {
                 ("颜色", TextColorOption.allCases.firstIndex(of: style.textColor)!),
                 ("图标", IconPrefix.allCases.firstIndex(of: style.iconPrefix)!),
                 ("装饰", Decorator.allCases.firstIndex(of: style.decorator)!),
+                ("语言", AppLanguage.allCases.firstIndex(of: .zh)!),
             ]
             for (j, (name, expectedIndex)) in expected.enumerated() {
                 guard appearance.items[j].title == name else {

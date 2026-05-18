@@ -7,6 +7,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     private var timer: Timer?
     private var displayOptions = DisplayOptions.default
     private let styleStore = StyleOptionsStore()
+    private let languageStore = LanguageStore()
     private var settingsWindowController: SettingsWindowController?
     private var fontPanelDelegate: FontPanelDelegate?
 
@@ -18,6 +19,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             guard let self else { return }
             self.buildMenu()
             self.updateTime()
+        }
+
+        languageStore.addListener { [weak self] _ in
+            self?.buildMenu()
         }
 
         updateTime()
@@ -32,6 +37,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         statusItem.menu = MenuBuilder.buildMenu(
             options: displayOptions,
             styleOptions: styleStore.current,
+            language: languageStore.current,
             target: self,
             toggleShowDate: #selector(toggleShowDate),
             toggleCompactTime: #selector(toggleCompactTime),
@@ -42,6 +48,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             setTextColor: #selector(setTextColor(_:)),
             setIconPrefix: #selector(setIconPrefix(_:)),
             setDecorator: #selector(setDecorator(_:)),
+            setLanguage: #selector(setLanguage(_:)),
             showSettings: #selector(showSettings),
             quit: #selector(quit)
         )
@@ -94,6 +101,11 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         styleStore.update { $0.iconPrefix = v }
     }
 
+    @objc private func setLanguage(_ sender: NSMenuItem) {
+        guard let v = AppLanguage.allCases[safe: sender.tag] else { return }
+        languageStore.update(v)
+    }
+
     func presentFontPanel() {
         let manager = NSFontManager.shared
         let style = styleStore.current
@@ -136,7 +148,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     @objc private func showSettings() {
         if settingsWindowController == nil {
-            settingsWindowController = SettingsWindowController(store: styleStore) { [weak self] in
+            settingsWindowController = SettingsWindowController(
+                styleStore: styleStore,
+                languageStore: languageStore
+            ) { [weak self] in
                 self?.presentFontPanel()
             }
             _ = settingsWindowController!.window

@@ -107,19 +107,22 @@ enum StyleOptionsTests {
 
     static func testIconPrefixDisplayAndRawValue() {
         print("  Running: testIconPrefixDisplayAndRawValue...")
-        let pairs: [(IconPrefix, String, String)] = [
-            (.globe, "🌐 ", "地球仪"),
-            (.clock, "🕐 ", "时钟"),
-            (.compass, "🧭 ", "指南针"),
-            (.earth, "🌍 ", "地球"),
-            (.none, "", "无图标"),
+        let pairs: [(IconPrefix, String, String, String)] = [
+            (.globe, "🌐 ", "地球仪", "Globe"),
+            (.clock, "🕐 ", "时钟", "Clock"),
+            (.compass, "🧭 ", "指南针", "Compass"),
+            (.earth, "🌍 ", "地球", "Earth"),
+            (.none, "", "无图标", "No icon"),
         ]
-        for (icon, prefix, name) in pairs {
+        for (icon, prefix, zhName, enName) in pairs {
             guard icon.prefix == prefix else {
                 fatalError("FAIL: \(icon).prefix expected '\(prefix)', got '\(icon.prefix)'")
             }
-            guard icon.displayName == name else {
-                fatalError("FAIL: \(icon).displayName expected '\(name)', got '\(icon.displayName)'")
+            guard icon.displayName(for: .zh) == zhName else {
+                fatalError("FAIL: \(icon).displayName(.zh) expected '\(zhName)', got '\(icon.displayName(for: .zh))'")
+            }
+            guard icon.displayName(for: .en) == enName else {
+                fatalError("FAIL: \(icon).displayName(.en) expected '\(enName)', got '\(icon.displayName(for: .en))'")
             }
         }
         guard IconPrefix.allCases.count == 5 else {

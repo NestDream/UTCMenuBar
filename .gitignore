@@ -23,3 +23,6 @@ DerivedData/
 
 # --- Claude Code (workflow private) ---
 .claude/
+
+# --- Release artifacts (uploaded to GitHub Releases instead of committed) ---
+UTCMenuBar-*.zip

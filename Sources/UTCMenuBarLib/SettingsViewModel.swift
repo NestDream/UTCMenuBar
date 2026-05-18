@@ -19,10 +19,12 @@ public enum SettingsViewModel {
     }
 
     /// Renders the styled string the menu bar would display, used as the live preview.
+    /// When `sample` is nil, builds one from the style's iconPrefix and a fixed time.
     public static func previewAttributedString(
         style: StyleOptions,
-        sample: String = "🌐 14:30:25 UTC"
+        sample: String? = nil
     ) -> NSAttributedString {
-        StyledTextBuilder.buildAttributedString(text: sample, style: style)
+        let text = sample ?? "\(style.iconPrefix.prefix)14:30:25 UTC"
+        return StyledTextBuilder.buildAttributedString(text: text, style: style)
     }
 }

@@ -107,15 +107,15 @@ running — it is not daemonized. Use the `.app` bundle for daily driving.
 
 Click the `🌐` icon in the menu bar to open the dropdown:
 
-- Toggle **显示日期 / 紧凑时间 / 紧凑日期** (show date / compact time /
-  compact date)
-- Open the **外观 (Appearance)** submenu to pick font / weight / size / color /
-  decorator
-- Open **设置… (`⌘,`)** for the same controls in a window with a live preview
-- **退出 (`⌘Q`)** to quit
+- Toggle **Show date / Compact time / Compact date**
+- Open the **Appearance** submenu to pick font / weight / size / color /
+  icon / decorator
+- Pick a **Language** (English / 中文) — same submenu, switches instantly
+- Open **Settings… (`⌘,`)** for the same controls in a window with live preview
+- **Quit (`⌘Q`)** to exit
 
-> The in-app menu strings are Chinese. The README is English. If localization
-> matters to you, see [Roadmap](#roadmap).
+> UI is available in English and Simplified Chinese. The app picks one based
+> on your system language on first launch and you can switch any time.
 
 ---
 

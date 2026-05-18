@@ -2,17 +2,20 @@ import Cocoa
 import UTCMenuBarLib
 
 /// Unit tests for menu structure verification.
+/// Tests run with language=.zh to keep existing Chinese label expectations intact.
 /// **Validates: Requirements 1.1, 2.1, 6.1 (display) + visual-distinction Requirement 8 (menu structure)**
 
 enum MenuTests {
 
     private static func buildDefault(
         options: DisplayOptions = .default,
-        styleOptions: StyleOptions = .default
+        styleOptions: StyleOptions = .default,
+        language: AppLanguage = .zh
     ) -> NSMenu {
         MenuBuilder.buildMenu(
             options: options,
             styleOptions: styleOptions,
+            language: language,
             target: nil,
             toggleShowDate: nil,
             toggleCompactTime: nil,
@@ -23,16 +26,17 @@ enum MenuTests {
             setTextColor: nil,
             setIconPrefix: nil,
             setDecorator: nil,
+            setLanguage: nil,
             showSettings: nil,
             quit: nil
         )
     }
 
     /// Top-level menu has 8 items in this order:
-    /// 0 显示日期, 1 紧凑时间, 2 紧凑日期, 3 separator, 4 外观▶, 5 设置… ⌘,, 6 separator, 7 Quit ⌘Q
-    static func testMenuStructure() {
-        print("  Running: testMenuStructure...")
-        let menu = buildDefault()
+    /// 0 显示日期, 1 紧凑时间, 2 紧凑日期, 3 separator, 4 外观▶, 5 设置… ⌘,, 6 separator, 7 退出 ⌘Q
+    static func testMenuStructureZh() {
+        print("  Running: testMenuStructureZh...")
+        let menu = buildDefault(language: .zh)
 
         guard menu.items.count == 8 else {
             fatalError("FAIL: Expected 8 menu items, got \(menu.items.count)")
@@ -46,10 +50,23 @@ enum MenuTests {
         guard menu.items[4].submenu != nil else { fatalError("FAIL: item 4 should have a submenu") }
         guard menu.items[5].title == "设置…" else { fatalError("FAIL: item 5 title '\(menu.items[5].title)'") }
         guard menu.items[6].isSeparatorItem else { fatalError("FAIL: item 6 should be separator") }
-        guard menu.items[7].title == "Quit" else { fatalError("FAIL: item 7 title '\(menu.items[7].title)'") }
+        guard menu.items[7].title == "退出" else { fatalError("FAIL: item 7 title '\(menu.items[7].title)'") }
         guard menu.items[7].keyEquivalent == "q" else { fatalError("FAIL: Quit keyEquivalent '\(menu.items[7].keyEquivalent)'") }
 
-        print("  ✓ testMenuStructure passed")
+        print("  ✓ testMenuStructureZh passed")
+    }
+
+    static func testMenuStructureEn() {
+        print("  Running: testMenuStructureEn...")
+        let menu = buildDefault(language: .en)
+        guard menu.items.count == 8 else { fatalError("FAIL: Expected 8 menu items") }
+        guard menu.items[0].title == "Show date" else { fatalError("FAIL: item 0 title '\(menu.items[0].title)'") }
+        guard menu.items[1].title == "Compact time" else { fatalError("FAIL: item 1 title '\(menu.items[1].title)'") }
+        guard menu.items[2].title == "Compact date" else { fatalError("FAIL: item 2 title '\(menu.items[2].title)'") }
+        guard menu.items[4].title == "Appearance" else { fatalError("FAIL: item 4 title '\(menu.items[4].title)'") }
+        guard menu.items[5].title == "Settings…" else { fatalError("FAIL: item 5 title '\(menu.items[5].title)'") }
+        guard menu.items[7].title == "Quit" else { fatalError("FAIL: item 7 title '\(menu.items[7].title)'") }
+        print("  ✓ testMenuStructureEn passed")
     }
 
     static func testSettingsItemKeyEquivalent() {
@@ -71,7 +88,7 @@ enum MenuTests {
         guard let appearance = menu.items[4].submenu else {
             fatalError("FAIL: appearance submenu missing")
         }
-        let expected = ["字体", "字重", "字号", "颜色", "图标", "装饰"]
+        let expected = ["字体", "字重", "字号", "颜色", "图标", "装饰", "语言"]
         guard appearance.items.count == expected.count else {
             fatalError("FAIL: expected \(expected.count) appearance items, got \(appearance.items.count)")
         }
@@ -86,8 +103,8 @@ enum MenuTests {
         print("  ✓ testAppearanceSubmenuStructure passed")
     }
 
-    private static func appearanceSubmenu(at index: Int, style: StyleOptions = .default) -> NSMenu {
-        guard let appearance = buildDefault(styleOptions: style).items[4].submenu else {
+    private static func appearanceSubmenu(at index: Int, style: StyleOptions = .default, language: AppLanguage = .zh) -> NSMenu {
+        guard let appearance = buildDefault(styleOptions: style, language: language).items[4].submenu else {
             fatalError("FAIL: appearance submenu missing")
         }
         guard let submenu = appearance.items[index].submenu else {
@@ -101,6 +118,9 @@ enum MenuTests {
         for (i, family) in FontFamily.allCases.enumerated() {
             var style = StyleOptions.default
             style.fontFamily = family
+            // Use .menlo when family is .custom because the style's customFontName is empty,
+            // we still want the test to validate radio behavior on every case.
+            if family == .custom { style.customFontName = "" }
             let submenu = appearanceSubmenu(at: 0, style: style)
             for (j, item) in submenu.items.enumerated() {
                 let expected: NSControl.StateValue = (i == j) ? .on : .off
@@ -200,7 +220,7 @@ enum MenuTests {
 
     static func testFontSubmenuIncludesCustom() {
         print("  Running: testFontSubmenuIncludesCustom...")
-        let submenu = appearanceSubmenu(at: 0, style: .default)
+        let submenu = appearanceSubmenu(at: 0, style: .default, language: .zh)
         let titles = submenu.items.map(\.title)
         guard titles.contains("自定义…") else {
             fatalError("FAIL: font submenu should include '自定义…' option, got titles \(titles)")
@@ -208,7 +228,7 @@ enum MenuTests {
         var style = StyleOptions.default
         style.fontFamily = .custom
         style.customFontName = "Helvetica"
-        let withCustom = appearanceSubmenu(at: 0, style: style)
+        let withCustom = appearanceSubmenu(at: 0, style: style, language: .zh)
         let customIndex = FontFamily.allCases.firstIndex(of: .custom)!
         guard withCustom.items[customIndex].title == "自定义：Helvetica" else {
             fatalError("FAIL: custom font item title should reflect customFontName, got '\(withCustom.items[customIndex].title)'")
@@ -216,13 +236,37 @@ enum MenuTests {
         guard withCustom.items[customIndex].state == .on else {
             fatalError("FAIL: custom font item should be checked when fontFamily=.custom")
         }
+        // English variant
+        let withCustomEn = appearanceSubmenu(at: 0, style: style, language: .en)
+        guard withCustomEn.items[customIndex].title == "Custom: Helvetica" else {
+            fatalError("FAIL: custom font item English title should be 'Custom: Helvetica', got '\(withCustomEn.items[customIndex].title)'")
+        }
         print("  ✓ testFontSubmenuIncludesCustom passed")
+    }
+
+    static func testLanguageSubmenuStructure() {
+        print("  Running: testLanguageSubmenuStructure...")
+        let submenu = appearanceSubmenu(at: 6, style: .default, language: .zh)
+        guard submenu.items.count == AppLanguage.allCases.count else {
+            fatalError("FAIL: language submenu should have \(AppLanguage.allCases.count) items, got \(submenu.items.count)")
+        }
+        // Native names appear regardless of which language the menu is being rendered in.
+        let titles = submenu.items.map(\.title)
+        guard titles.contains("中文") else { fatalError("FAIL: language submenu should contain '中文'") }
+        guard titles.contains("English") else { fatalError("FAIL: language submenu should contain 'English'") }
+        // The current language has its checkmark.
+        let zhIndex = AppLanguage.allCases.firstIndex(of: .zh)!
+        guard submenu.items[zhIndex].state == .on else {
+            fatalError("FAIL: when current=.zh, the .zh submenu item should be .on")
+        }
+        print("  ✓ testLanguageSubmenuStructure passed")
     }
 
     static func runAll() {
         print("Menu Unit Tests")
         print("================")
-        testMenuStructure()
+        testMenuStructureZh()
+        testMenuStructureEn()
         testSettingsItemKeyEquivalent()
         testAppearanceSubmenuStructure()
         testRadioForFontFamily()
@@ -232,6 +276,7 @@ enum MenuTests {
         testRadioForIconPrefix()
         testRadioForDecorator()
         testFontSubmenuIncludesCustom()
+        testLanguageSubmenuStructure()
         print("\nAll menu unit tests passed ✓")
     }
 }
