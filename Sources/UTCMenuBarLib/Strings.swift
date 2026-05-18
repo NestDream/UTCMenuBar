@@ -71,6 +71,18 @@ public enum StringKey: String, CaseIterable, Sendable {
     case menuLanguage
     case languageEnglish
     case languageChinese
+
+    // Timezone converter
+    case menuTimezoneConverter
+    case converterWindowTitle
+    case converterLabelTimezone
+    case converterLabelUTC
+    case converterLabelTarget
+    case converterNowButton
+    case converterCopyButton
+    case converterErrorInvalidFormat
+    case converterErrorYearOutOfRange
+    case converterErrorUnknownTimezone
 }
 
 public enum Strings {
@@ -154,6 +166,17 @@ public enum Strings {
         .menuLanguage: "Language",
         .languageEnglish: "English",
         .languageChinese: "中文",
+
+        .menuTimezoneConverter: "Time Zone Converter…",
+        .converterWindowTitle: "Time Zone Converter",
+        .converterLabelTimezone: "Time Zone",
+        .converterLabelUTC: "UTC",
+        .converterLabelTarget: "Target",
+        .converterNowButton: "Now",
+        .converterCopyButton: "Copy",
+        .converterErrorInvalidFormat: "Invalid format. Use YYYY-MM-DD HH:MM:SS",
+        .converterErrorYearOutOfRange: "Year out of range (1900-2100)",
+        .converterErrorUnknownTimezone: "Unknown timezone",
     ]
 
     private static let zh: [StringKey: String] = [
@@ -217,5 +240,16 @@ public enum Strings {
         .menuLanguage: "语言",
         .languageEnglish: "English",
         .languageChinese: "中文",
+
+        .menuTimezoneConverter: "时区转换…",
+        .converterWindowTitle: "时区转换",
+        .converterLabelTimezone: "时区",
+        .converterLabelUTC: "UTC",
+        .converterLabelTarget: "目标",
+        .converterNowButton: "现在",
+        .converterCopyButton: "复制",
+        .converterErrorInvalidFormat: "无法解析时间，请使用 YYYY-MM-DD HH:MM:SS 格式",
+        .converterErrorYearOutOfRange: "年份超出范围（1900-2100）",
+        .converterErrorUnknownTimezone: "未知时区",
     ]
 }

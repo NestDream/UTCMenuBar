@@ -20,6 +20,7 @@ enum MenuPropertyTests {
             setDecorator: nil,
             setLanguage: nil,
             showSettings: nil,
+            showTimezoneConverter: nil,
             quit: nil
         )
     }

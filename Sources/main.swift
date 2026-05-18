@@ -8,7 +8,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     private var displayOptions = DisplayOptions.default
     private let styleStore = StyleOptionsStore()
     private let languageStore = LanguageStore()
+    private let converterStore = TimezoneConverterStore()
     private var settingsWindowController: SettingsWindowController?
+    private var converterWindowController: TimezoneConverterWindowController?
     private var fontPanelDelegate: FontPanelDelegate?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
@@ -50,6 +52,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             setDecorator: #selector(setDecorator(_:)),
             setLanguage: #selector(setLanguage(_:)),
             showSettings: #selector(showSettings),
+            showTimezoneConverter: #selector(showTimezoneConverter),
             quit: #selector(quit)
         )
     }
@@ -158,6 +161,18 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         }
         NSApp.activate(ignoringOtherApps: true)
         settingsWindowController!.showWindow(nil)
+    }
+
+    @objc private func showTimezoneConverter() {
+        if converterWindowController == nil {
+            converterWindowController = TimezoneConverterWindowController(
+                converterStore: converterStore,
+                languageStore: languageStore
+            )
+            _ = converterWindowController!.window
+        }
+        NSApp.activate(ignoringOtherApps: true)
+        converterWindowController!.showWindow(nil)
     }
 
     @objc private func quit() {
