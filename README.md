@@ -55,24 +55,21 @@ no telemetry, ~5 MB binary.
 
 ### Screenshots
 
-> The screenshots below are placeholders. **TODO for the maintainer**: capture
-> these and drop the PNGs into `docs/screenshots/`.
-
 Default view in the menu bar:
 
-![menu bar default](docs/screenshots/menubar-default.png) <!-- TODO: add screenshot -->
+![menu bar default](docs/screenshots/menubar-default.png)
 
 Dropdown menu showing display + appearance options:
 
-![dropdown menu](docs/screenshots/dropdown-menu.png) <!-- TODO: add screenshot -->
+![dropdown menu](docs/screenshots/dropdown-menu.png)
 
 Settings window with live preview:
 
-![settings window](docs/screenshots/settings-window.png) <!-- TODO: add screenshot -->
+![settings window](docs/screenshots/settings-window.png)
 
 UTC styled distinctly next to the system clock (the point of the app):
 
-![visual distinction](docs/screenshots/visual-distinction.png) <!-- TODO: add screenshot -->
+![visual distinction](docs/screenshots/visual-distinction.png)
 
 ---
 
@@ -422,10 +419,4 @@ See [`CLAUDE.md`](CLAUDE.md) for the full set of conventions.
 
 ## License
 
-MIT recommended.
-
-> **TODO for the maintainer**: add a `LICENSE` file at the repo root with the
-> MIT license text and your copyright line, then update this section to a
-> normal "Licensed under [MIT](LICENSE)." sentence. Until that file lands,
-> consider this project source-available but unlicensed by default — i.e.,
-> external contributors should not assume any rights beyond reading the code.
+Licensed under [MIT](LICENSE).
