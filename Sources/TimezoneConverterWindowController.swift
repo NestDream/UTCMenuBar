@@ -29,6 +29,7 @@ final class TimezoneConverterWindowController: NSWindowController, NSWindowDeleg
             styleMask: [.titled, .closable],
             backing: .buffered, defer: false)
         window.isReleasedWhenClosed = false
+        window.center()
         super.init(window: window)
         window.delegate = self
         setupContent()
