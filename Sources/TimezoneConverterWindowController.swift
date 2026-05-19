@@ -25,7 +25,7 @@ final class TimezoneConverterWindowController: NSWindowController, NSWindowDeleg
         self.converterStore = converterStore
         self.languageStore = languageStore
         let window = NSWindow(
-            contentRect: NSRect(x: 0, y: 0, width: 480, height: 240),
+            contentRect: NSRect(x: 0, y: 0, width: 520, height: 220),
             styleMask: [.titled, .closable],
             backing: .buffered, defer: false)
         window.isReleasedWhenClosed = false
@@ -37,27 +37,20 @@ final class TimezoneConverterWindowController: NSWindowController, NSWindowDeleg
     required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
 
     private func setupContent() {
-        let language = languageStore.current
-
-        // Configure timezone popup
         timezoneIdentifiers = TimeZone.knownTimeZoneIdentifiers.sorted()
         timezonePopup.target = self
         timezonePopup.action = #selector(timezoneChanged(_:))
         populateTimezonePopup()
         selectCurrentTimezone()
 
-        // Configure text fields
-        utcField.placeholderString = "YYYY-MM-DD HH:MM:SS"
-        utcField.isEditable = true
-        utcField.isBezeled = true
-        utcField.bezelStyle = .roundedBezel
+        for field in [utcField, targetField] {
+            field.isEditable = true
+            field.isBezeled = true
+            field.bezelStyle = .roundedBezel
+            field.placeholderString = "YYYY-MM-DD HH:MM:SS"
+            field.font = .monospacedSystemFont(ofSize: 13, weight: .regular)
+        }
 
-        targetField.placeholderString = "YYYY-MM-DD HH:MM:SS"
-        targetField.isEditable = true
-        targetField.isBezeled = true
-        targetField.bezelStyle = .roundedBezel
-
-        // Observe text changes via NotificationCenter
         NotificationCenter.default.addObserver(
             self, selector: #selector(textDidChange(_:)),
             name: NSControl.textDidChangeNotification, object: utcField)
@@ -65,52 +58,54 @@ final class TimezoneConverterWindowController: NSWindowController, NSWindowDeleg
             self, selector: #selector(textDidChange(_:)),
             name: NSControl.textDidChangeNotification, object: targetField)
 
-        // Configure copy buttons
-        copyUTCButton.bezelStyle = .rounded
-        copyUTCButton.target = self
-        copyUTCButton.action = #selector(copyClicked(_:))
+        for btn in [copyUTCButton, copyTargetButton] {
+            btn.bezelStyle = .rounded
+            btn.target = self
+            btn.action = #selector(copyClicked(_:))
+            btn.setContentHuggingPriority(.required, for: .horizontal)
+        }
 
-        copyTargetButton.bezelStyle = .rounded
-        copyTargetButton.target = self
-        copyTargetButton.action = #selector(copyClicked(_:))
-
-        // Configure now button
         nowButton.bezelStyle = .rounded
         nowButton.target = self
         nowButton.action = #selector(nowClicked)
 
-        // Configure error label
         errorLabel.textColor = .systemRed
+        errorLabel.font = .systemFont(ofSize: 11)
         errorLabel.isHidden = true
+        errorLabel.maximumNumberOfLines = 1
 
-        // Build labels
         timezoneLabel = NSTextField(labelWithString: "")
         utcLabel = NSTextField(labelWithString: "")
         targetLabel = NSTextField(labelWithString: "")
 
-        // Layout
-        let timezoneRow = row(timezoneLabel, timezonePopup)
-        let utcRow = rowWithButton(utcLabel, utcField, copyUTCButton)
-        let targetRow = rowWithButton(targetLabel, targetField, copyTargetButton)
+        let labelWidth: CGFloat = 60
+        for label in [timezoneLabel!, utcLabel!, targetLabel!] {
+            label.alignment = .right
+            label.setContentHuggingPriority(.required, for: .horizontal)
+            label.widthAnchor.constraint(equalToConstant: labelWidth).isActive = true
+        }
 
-        let nowContainer = NSStackView(views: [nowButton])
-        nowContainer.orientation = .horizontal
-        nowContainer.alignment = .trailing
+        let fieldWidth: CGFloat = 320
+        utcField.widthAnchor.constraint(equalToConstant: fieldWidth).isActive = true
+        targetField.widthAnchor.constraint(equalToConstant: fieldWidth).isActive = true
+        timezonePopup.widthAnchor.constraint(equalToConstant: fieldWidth + 60).isActive = true
 
-        let outer = NSStackView(views: [
-            timezoneRow,
-            utcRow,
-            targetRow,
-            errorLabel,
-            nowContainer,
-        ])
+        let tzRow = hstack([timezoneLabel, timezonePopup])
+        let utcRow = hstack([utcLabel, utcField, copyUTCButton])
+        let targetRow = hstack([targetLabel, targetField, copyTargetButton])
+
+        let buttonRow = NSStackView(views: [NSView(), nowButton])
+        buttonRow.orientation = .horizontal
+        buttonRow.distribution = .fill
+
+        let outer = NSStackView(views: [tzRow, utcRow, targetRow, errorLabel, buttonRow])
         outer.orientation = .vertical
         outer.spacing = 12
-        outer.alignment = .leading
-        outer.edgeInsets = NSEdgeInsets(top: 20, left: 20, bottom: 20, right: 20)
+        outer.alignment = .left
+        outer.edgeInsets = NSEdgeInsets(top: 20, left: 20, bottom: 16, right: 20)
         outer.translatesAutoresizingMaskIntoConstraints = false
 
-        let content = NSView()
+        let content = window!.contentView!
         content.addSubview(outer)
         NSLayoutConstraint.activate([
             outer.leadingAnchor.constraint(equalTo: content.leadingAnchor),
@@ -118,22 +113,20 @@ final class TimezoneConverterWindowController: NSWindowController, NSWindowDeleg
             outer.topAnchor.constraint(equalTo: content.topAnchor),
             outer.bottomAnchor.constraint(equalTo: content.bottomAnchor),
         ])
-        window?.contentView = content
 
-        // Width constraints for fields
-        utcField.widthAnchor.constraint(greaterThanOrEqualToConstant: 200).isActive = true
-        targetField.widthAnchor.constraint(greaterThanOrEqualToConstant: 200).isActive = true
-        timezonePopup.widthAnchor.constraint(greaterThanOrEqualToConstant: 300).isActive = true
-
-        // Trailing alignment for now button container
-        nowContainer.trailingAnchor.constraint(equalTo: outer.trailingAnchor).isActive = true
-
-        applyLanguage(language)
+        applyLanguage(languageStore.current)
 
         languageStore.addListener { [weak self] lang in
-            guard let self else { return }
-            self.applyLanguage(lang)
+            self?.applyLanguage(lang)
         }
+    }
+
+    private func hstack(_ views: [NSView]) -> NSStackView {
+        let stack = NSStackView(views: views)
+        stack.orientation = .horizontal
+        stack.spacing = 8
+        stack.alignment = .centerY
+        return stack
     }
 
     private func applyLanguage(_ lang: AppLanguage) {
@@ -145,12 +138,6 @@ final class TimezoneConverterWindowController: NSWindowController, NSWindowDeleg
         copyTargetButton.title = Strings.t(.converterCopyButton, language: lang)
         nowButton.title = Strings.t(.converterNowButton, language: lang)
 
-        // Update error label if visible
-        if !errorLabel.isHidden {
-            // Keep whatever error is showing; it will be refreshed on next conversion
-        }
-
-        // Repopulate timezone popup to refresh offset strings
         let selected = timezonePopup.indexOfSelectedItem
         populateTimezonePopup()
         if selected >= 0 && selected < timezonePopup.numberOfItems {
@@ -162,7 +149,7 @@ final class TimezoneConverterWindowController: NSWindowController, NSWindowDeleg
         timezonePopup.removeAllItems()
         let now = Date()
         for id in timezoneIdentifiers {
-            let offset = TimezoneConverterWindowController.offsetString(for: id, at: now)
+            let offset = Self.offsetString(for: id, at: now)
             timezonePopup.addItem(withTitle: "\(id) (\(offset))")
         }
     }
@@ -178,25 +165,20 @@ final class TimezoneConverterWindowController: NSWindowController, NSWindowDeleg
         guard let tz = TimeZone(identifier: identifier) else { return "UTC+00:00" }
         let seconds = tz.secondsFromGMT(for: date)
         let sign = seconds >= 0 ? "+" : "-"
-        let absSeconds = abs(seconds)
-        let hours = absSeconds / 3600
-        let minutes = (absSeconds % 3600) / 60
-        return "UTC\(sign)\(String(format: "%02d", hours)):\(String(format: "%02d", minutes))"
+        let h = abs(seconds) / 3600
+        let m = (abs(seconds) % 3600) / 60
+        return "UTC\(sign)\(String(format: "%02d:%02d", h, m))"
     }
-
-    // MARK: - Actions
 
     @objc private func timezoneChanged(_ sender: NSPopUpButton) {
         let idx = sender.indexOfSelectedItem
         guard idx >= 0 && idx < timezoneIdentifiers.count else { return }
-        let selectedId = timezoneIdentifiers[idx]
-        converterStore.update { $0.targetTimezone = selectedId }
+        converterStore.update { $0.targetTimezone = timezoneIdentifiers[idx] }
         reconvert()
     }
 
     @objc private func nowClicked() {
-        let targetId = converterStore.current.targetTimezone
-        guard let result = TimezoneConverter.now(targetTimezoneId: targetId) else { return }
+        guard let result = TimezoneConverter.now(targetTimezoneId: converterStore.current.targetTimezone) else { return }
         isProgrammaticUpdate = true
         utcField.stringValue = result.utc
         targetField.stringValue = result.target
@@ -205,25 +187,17 @@ final class TimezoneConverterWindowController: NSWindowController, NSWindowDeleg
     }
 
     @objc private func copyClicked(_ sender: NSButton) {
-        let field: NSTextField
-        if sender === copyUTCButton {
-            field = utcField
-        } else {
-            field = targetField
-        }
-        guard !field.stringValue.isEmpty else { return }
+        let value = (sender === copyUTCButton) ? utcField.stringValue : targetField.stringValue
+        guard !value.isEmpty else { return }
         NSPasteboard.general.clearContents()
-        NSPasteboard.general.setString(field.stringValue, forType: .string)
+        NSPasteboard.general.setString(value, forType: .string)
     }
 
     @objc private func textDidChange(_ notification: Notification) {
         guard !isProgrammaticUpdate else { return }
         guard let field = notification.object as? NSTextField else { return }
-        if field === utcField {
-            convertFromUTC()
-        } else if field === targetField {
-            convertFromTarget()
-        }
+        if field === utcField { convertFromUTC() }
+        else if field === targetField { convertFromTarget() }
     }
 
     private func convertFromUTC() {
@@ -235,16 +209,14 @@ final class TimezoneConverterWindowController: NSWindowController, NSWindowDeleg
             errorLabel.isHidden = true
             return
         }
-        let targetId = converterStore.current.targetTimezone
-        let result = TimezoneConverter.convertUTCToTarget(input, targetTimezoneId: targetId)
-        switch result {
+        switch TimezoneConverter.convertUTCToTarget(input, targetTimezoneId: converterStore.current.targetTimezone) {
         case .success(let converted):
             isProgrammaticUpdate = true
             targetField.stringValue = converted
             isProgrammaticUpdate = false
             errorLabel.isHidden = true
-        case .failure(let error):
-            showError(error)
+        case .failure(let err):
+            showError(err)
         }
     }
 
@@ -257,64 +229,31 @@ final class TimezoneConverterWindowController: NSWindowController, NSWindowDeleg
             errorLabel.isHidden = true
             return
         }
-        let targetId = converterStore.current.targetTimezone
-        let result = TimezoneConverter.convertTargetToUTC(input, targetTimezoneId: targetId)
-        switch result {
+        switch TimezoneConverter.convertTargetToUTC(input, targetTimezoneId: converterStore.current.targetTimezone) {
         case .success(let converted):
             isProgrammaticUpdate = true
             utcField.stringValue = converted
             isProgrammaticUpdate = false
             errorLabel.isHidden = true
-        case .failure(let error):
-            showError(error)
+        case .failure(let err):
+            showError(err)
         }
     }
 
-    /// Re-convert based on whichever field has content (prefer UTC field).
     private func reconvert() {
         let utcInput = utcField.stringValue.trimmingCharacters(in: .whitespacesAndNewlines)
-        if !utcInput.isEmpty {
-            convertFromUTC()
-            return
-        }
+        if !utcInput.isEmpty { convertFromUTC(); return }
         let targetInput = targetField.stringValue.trimmingCharacters(in: .whitespacesAndNewlines)
-        if !targetInput.isEmpty {
-            convertFromTarget()
-        }
+        if !targetInput.isEmpty { convertFromTarget() }
     }
 
     private func showError(_ error: TimezoneConverter.ConversionError) {
         let lang = languageStore.current
         switch error {
-        case .invalidFormat:
-            errorLabel.stringValue = Strings.t(.converterErrorInvalidFormat, language: lang)
-        case .yearOutOfRange:
-            errorLabel.stringValue = Strings.t(.converterErrorYearOutOfRange, language: lang)
-        case .unknownTimezone:
-            errorLabel.stringValue = Strings.t(.converterErrorUnknownTimezone, language: lang)
+        case .invalidFormat: errorLabel.stringValue = Strings.t(.converterErrorInvalidFormat, language: lang)
+        case .yearOutOfRange: errorLabel.stringValue = Strings.t(.converterErrorYearOutOfRange, language: lang)
+        case .unknownTimezone: errorLabel.stringValue = Strings.t(.converterErrorUnknownTimezone, language: lang)
         }
         errorLabel.isHidden = false
-    }
-
-    // MARK: - Layout helpers
-
-    private func row(_ label: NSTextField, _ control: NSView) -> NSStackView {
-        label.alignment = .right
-        label.widthAnchor.constraint(equalToConstant: 60).isActive = true
-        let stack = NSStackView(views: [label, control])
-        stack.orientation = .horizontal
-        stack.spacing = 12
-        stack.alignment = .firstBaseline
-        return stack
-    }
-
-    private func rowWithButton(_ label: NSTextField, _ field: NSTextField, _ button: NSButton) -> NSStackView {
-        label.alignment = .right
-        label.widthAnchor.constraint(equalToConstant: 60).isActive = true
-        let stack = NSStackView(views: [label, field, button])
-        stack.orientation = .horizontal
-        stack.spacing = 8
-        stack.alignment = .firstBaseline
-        return stack
     }
 }

@@ -8,68 +8,81 @@ struct ClockPopoverView: View {
     let onQuit: () -> Void
 
     var body: some View {
-        VStack(spacing: 16) {
-            // Large UTC time display
-            Text(viewModel.currentTime)
-                .font(.system(size: 32, weight: .light, design: .monospaced))
-                .foregroundStyle(.primary)
-                .frame(maxWidth: .infinity)
-                .padding(.top, 8)
+        VStack(spacing: 0) {
+            // Arrow pointing up toward the status item
+            ArrowUp()
+                .fill(.ultraThinMaterial)
+                .frame(width: 16, height: 8)
 
-            Divider()
+            VStack(spacing: 12) {
+                Text(viewModel.currentTime)
+                    .font(.system(size: 28, weight: .light, design: .monospaced))
+                    .foregroundStyle(.primary)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 8)
 
-            // Action buttons
-            VStack(spacing: 8) {
-                popoverButton(
-                    title: Strings.t(.menuSettings, language: viewModel.language),
-                    systemImage: "gearshape",
-                    shortcut: "\u{2318},",
-                    action: onSettings
-                )
-                popoverButton(
-                    title: Strings.t(.menuTimezoneConverter, language: viewModel.language),
-                    systemImage: "globe",
-                    shortcut: "\u{2318}T",
-                    action: onConverter
-                )
-                popoverButton(
-                    title: Strings.t(.menuQuit, language: viewModel.language),
-                    systemImage: "power",
-                    shortcut: "\u{2318}Q",
-                    action: onQuit
-                )
+                Divider()
+
+                VStack(spacing: 4) {
+                    popoverButton(
+                        title: Strings.t(.menuSettings, language: viewModel.language),
+                        systemImage: "gearshape",
+                        shortcut: "⌘,",
+                        action: onSettings
+                    )
+                    popoverButton(
+                        title: Strings.t(.menuTimezoneConverter, language: viewModel.language),
+                        systemImage: "globe",
+                        shortcut: "⌘T",
+                        action: onConverter
+                    )
+
+                    Divider()
+                        .padding(.vertical, 4)
+
+                    popoverButton(
+                        title: Strings.t(.menuQuit, language: viewModel.language),
+                        systemImage: "power",
+                        shortcut: "⌘Q",
+                        action: onQuit
+                    )
+                }
             }
+            .padding(16)
+            .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12))
         }
-        .padding(16)
-        .frame(width: 280)
-        .modifier(GlassBackgroundModifier())
+        .frame(width: 260)
     }
 
     private func popoverButton(title: String, systemImage: String, shortcut: String, action: @escaping () -> Void) -> some View {
         Button(action: action) {
-            HStack {
+            HStack(spacing: 8) {
                 Image(systemName: systemImage)
-                    .frame(width: 20)
+                    .font(.system(size: 13))
+                    .frame(width: 18, alignment: .center)
                 Text(title)
+                    .font(.system(size: 13))
                 Spacer()
                 Text(shortcut)
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .font(.system(size: 11))
+                    .foregroundStyle(.tertiary)
             }
+            .contentShape(Rectangle())
             .padding(.horizontal, 8)
-            .padding(.vertical, 4)
+            .padding(.vertical, 5)
         }
         .buttonStyle(.plain)
     }
 }
 
-/// Applies Liquid Glass effect on macOS 26+, falls back to ultraThinMaterial on older systems.
-private struct GlassBackgroundModifier: ViewModifier {
-    func body(content: Content) -> some View {
-        if #available(macOS 26.0, *) {
-            content.glassEffect(.regular.interactive())
-        } else {
-            content.background(.ultraThinMaterial)
-        }
+/// A small triangle pointing upward, used as the popover arrow.
+private struct ArrowUp: Shape {
+    func path(in rect: CGRect) -> Path {
+        var p = Path()
+        p.move(to: CGPoint(x: rect.midX, y: rect.minY))
+        p.addLine(to: CGPoint(x: rect.maxX, y: rect.maxY))
+        p.addLine(to: CGPoint(x: rect.minX, y: rect.maxY))
+        p.closeSubpath()
+        return p
     }
 }
