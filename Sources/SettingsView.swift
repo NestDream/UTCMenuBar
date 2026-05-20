@@ -95,36 +95,37 @@ final class SettingsViewModel2: ObservableObject {
     private let styleStore: StyleOptionsStore
     private let languageStore: LanguageStore
     private let onDisplayOptionsChanged: (DisplayOptions) -> Void
+    private var isSyncing = false
 
     @Published var showDate: Bool {
-        didSet { saveDisplayOptions() }
+        didSet { guard !isSyncing else { return }; saveDisplayOptions() }
     }
     @Published var compactTime: Bool {
-        didSet { saveDisplayOptions() }
+        didSet { guard !isSyncing else { return }; saveDisplayOptions() }
     }
     @Published var compactDate: Bool {
-        didSet { saveDisplayOptions() }
+        didSet { guard !isSyncing else { return }; saveDisplayOptions() }
     }
     @Published var fontFamily: FontFamily {
-        didSet { if fontFamily != .custom { styleStore.update { $0.fontFamily = fontFamily } } }
+        didSet { guard !isSyncing, fontFamily != .custom else { return }; styleStore.update { $0.fontFamily = fontFamily } }
     }
     @Published var fontWeight: FontWeight {
-        didSet { styleStore.update { $0.fontWeight = fontWeight } }
+        didSet { guard !isSyncing else { return }; styleStore.update { $0.fontWeight = fontWeight } }
     }
     @Published var fontSize: FontSize {
-        didSet { styleStore.update { $0.fontSize = fontSize } }
+        didSet { guard !isSyncing else { return }; styleStore.update { $0.fontSize = fontSize } }
     }
     @Published var textColor: TextColorOption {
-        didSet { styleStore.update { $0.textColor = textColor } }
+        didSet { guard !isSyncing else { return }; styleStore.update { $0.textColor = textColor } }
     }
     @Published var iconPrefix: IconPrefix {
-        didSet { styleStore.update { $0.iconPrefix = iconPrefix } }
+        didSet { guard !isSyncing else { return }; styleStore.update { $0.iconPrefix = iconPrefix } }
     }
     @Published var decorator: Decorator {
-        didSet { styleStore.update { $0.decorator = decorator } }
+        didSet { guard !isSyncing else { return }; styleStore.update { $0.decorator = decorator } }
     }
     @Published var appLanguage: AppLanguage {
-        didSet { languageStore.update(appLanguage) }
+        didSet { guard !isSyncing else { return }; languageStore.update(appLanguage) }
     }
     @Published var customFontName: String = ""
     @Published var language: AppLanguage = .en
@@ -160,6 +161,7 @@ final class SettingsViewModel2: ObservableObject {
 
         styleStore.addListener { [weak self] style in
             guard let self else { return }
+            self.isSyncing = true
             self.fontFamily = style.fontFamily
             self.fontWeight = style.fontWeight
             self.fontSize = style.fontSize
@@ -167,11 +169,15 @@ final class SettingsViewModel2: ObservableObject {
             self.iconPrefix = style.iconPrefix
             self.decorator = style.decorator
             self.customFontName = style.customFontName
+            self.isSyncing = false
             self.updatePreview()
         }
         languageStore.addListener { [weak self] lang in
-            self?.language = lang
-            self?.appLanguage = lang
+            guard let self else { return }
+            self.isSyncing = true
+            self.language = lang
+            self.appLanguage = lang
+            self.isSyncing = false
         }
     }
 
