@@ -29,7 +29,8 @@ final class TimezoneConverterWindowController: NSWindowController, NSWindowDeleg
             styleMask: [.titled, .closable],
             backing: .buffered, defer: false)
         window.isReleasedWhenClosed = false
-        window.center()
+        window.setFrameAutosaveName("TimezoneConverter")
+        if !window.setFrameUsingName("TimezoneConverter") { window.center() }
         super.init(window: window)
         window.delegate = self
         setupContent()
@@ -61,12 +62,15 @@ final class TimezoneConverterWindowController: NSWindowController, NSWindowDeleg
 
         for btn in [copyUTCButton, copyTargetButton] {
             btn.bezelStyle = .rounded
+            btn.image = NSImage(systemSymbolName: "doc.on.doc", accessibilityDescription: "Copy")
+            btn.imagePosition = .imageOnly
             btn.target = self
             btn.action = #selector(copyClicked(_:))
             btn.setContentHuggingPriority(.required, for: .horizontal)
         }
 
         nowButton.bezelStyle = .rounded
+        nowButton.keyEquivalent = "\r"
         nowButton.target = self
         nowButton.action = #selector(nowClicked)
 

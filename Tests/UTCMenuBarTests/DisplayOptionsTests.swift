@@ -6,19 +6,19 @@ import UTCMenuBarLib
 
 enum DisplayOptionsTests {
 
-    /// Verify that DisplayOptions.default has all properties set to false.
+    /// Verify that DisplayOptions.default has the expected values.
     static func testDefaultValues() {
         print("  Running: testDefaultValues...")
         let defaults = DisplayOptions.default
 
-        guard defaults.showDate == false else {
-            fatalError("FAIL: DisplayOptions.default.showDate should be false, got \(defaults.showDate)")
+        guard defaults.showDate == true else {
+            fatalError("FAIL: DisplayOptions.default.showDate should be true, got \(defaults.showDate)")
         }
-        guard defaults.compactTime == false else {
-            fatalError("FAIL: DisplayOptions.default.compactTime should be false, got \(defaults.compactTime)")
+        guard defaults.compactTime == true else {
+            fatalError("FAIL: DisplayOptions.default.compactTime should be true, got \(defaults.compactTime)")
         }
-        guard defaults.compactDate == false else {
-            fatalError("FAIL: DisplayOptions.default.compactDate should be false, got \(defaults.compactDate)")
+        guard defaults.compactDate == true else {
+            fatalError("FAIL: DisplayOptions.default.compactDate should be true, got \(defaults.compactDate)")
         }
         print("  ✓ testDefaultValues passed")
     }

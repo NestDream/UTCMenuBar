@@ -2,30 +2,48 @@ import Foundation
 
 public enum TimeFormatter {
 
-    /// Format the time portion of a date.
-    /// - compact=false → "HH:mm:ss"
-    /// - compact=true  → "HH:mm"
+    private static let utcZone = TimeZone(identifier: "UTC")!
+
+    private static let fullTimeFormatter: DateFormatter = {
+        let f = DateFormatter()
+        f.dateFormat = "HH:mm:ss"
+        f.timeZone = utcZone
+        f.locale = Locale(identifier: "en_US_POSIX")
+        return f
+    }()
+
+    private static let compactTimeFormatter: DateFormatter = {
+        let f = DateFormatter()
+        f.dateFormat = "HH:mm"
+        f.timeZone = utcZone
+        f.locale = Locale(identifier: "en_US_POSIX")
+        return f
+    }()
+
+    private static let fullDateFormatter: DateFormatter = {
+        let f = DateFormatter()
+        f.dateFormat = "yyyy-MM-dd"
+        f.timeZone = utcZone
+        f.locale = Locale(identifier: "en_US_POSIX")
+        return f
+    }()
+
+    private static let compactDateFormatter: DateFormatter = {
+        let f = DateFormatter()
+        f.dateFormat = "MM/dd"
+        f.timeZone = utcZone
+        f.locale = Locale(identifier: "en_US_POSIX")
+        return f
+    }()
+
     public static func formatTime(date: Date, compact: Bool) -> String {
-        let formatter = DateFormatter()
-        formatter.dateFormat = compact ? "HH:mm" : "HH:mm:ss"
-        formatter.timeZone = TimeZone(identifier: "UTC")
-        return formatter.string(from: date)
+        (compact ? compactTimeFormatter : fullTimeFormatter).string(from: date)
     }
 
-    /// Format the date portion of a date.
-    /// - compact=false → "yyyy-MM-dd"
-    /// - compact=true  → "MM/dd"
     public static func formatDate(date: Date, compact: Bool) -> String {
-        let formatter = DateFormatter()
-        formatter.dateFormat = compact ? "MM/dd" : "yyyy-MM-dd"
-        formatter.timeZone = TimeZone(identifier: "UTC")
-        return formatter.string(from: date)
+        (compact ? compactDateFormatter : fullDateFormatter).string(from: date)
     }
 
-    /// Format the full menu bar display string.
-    /// Default icon prefix is "🌐 " (backward compatible); always ends with " UTC".
-    /// When showDate=true: "{iconPrefix}{date} {time} UTC"
-    /// When showDate=false: "{iconPrefix}{time} UTC"
     public static func formatDisplay(
         date: Date,
         options: DisplayOptions,

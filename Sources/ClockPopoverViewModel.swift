@@ -6,8 +6,6 @@ import UTCMenuBarLib
 final class ClockPopoverViewModel: ObservableObject {
     @Published var currentTime: String = ""
     @Published var language: AppLanguage = .en
-    @Published var styleOptions: StyleOptions = .default
-    @Published var displayOptions: DisplayOptions = .default
 
     private let styleStore: StyleOptionsStore
     private let languageStore: LanguageStore
@@ -23,29 +21,23 @@ final class ClockPopoverViewModel: ObservableObject {
         self.languageStore = languageStore
         self.displayOptionsProvider = displayOptionsProvider
         self.language = languageStore.current
-        self.styleOptions = styleStore.current
-        self.displayOptions = displayOptionsProvider()
 
         updateTime()
         timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
             Task { @MainActor in self?.updateTime() }
         }
+        RunLoop.current.add(timer!, forMode: .common)
 
-        styleStore.addListener { [weak self] style in
-            self?.styleOptions = style
-            self?.updateTime()
-        }
-        languageStore.addListener { [weak self] lang in
-            self?.language = lang
-        }
+        styleStore.addListener { [weak self] _ in self?.updateTime() }
+        languageStore.addListener { [weak self] lang in self?.language = lang }
     }
 
     private func updateTime() {
-        displayOptions = displayOptionsProvider()
+        let opts = displayOptionsProvider()
         currentTime = TimeFormatter.formatDisplay(
             date: Date(),
-            options: displayOptions,
-            iconPrefix: styleOptions.iconPrefix
+            options: opts,
+            iconPrefix: styleStore.current.iconPrefix
         )
     }
 }

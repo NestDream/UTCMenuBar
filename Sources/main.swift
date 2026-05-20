@@ -46,10 +46,28 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         }
 
         updateTime()
-        timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
+        rebuildTimer()
+
+        NotificationCenter.default.addObserver(
+            self, selector: #selector(systemClockDidChange),
+            name: .NSSystemClockDidChange, object: nil)
+        NSWorkspace.shared.notificationCenter.addObserver(
+            self, selector: #selector(systemClockDidChange),
+            name: NSWorkspace.didWakeNotification, object: nil)
+    }
+
+    private func rebuildTimer() {
+        timer?.invalidate()
+        let interval: TimeInterval = displayOptions.compactTime ? 60.0 : 1.0
+        timer = Timer.scheduledTimer(withTimeInterval: interval, repeats: true) { [weak self] _ in
             Task { @MainActor in self?.updateTime() }
         }
         RunLoop.current.add(timer!, forMode: .common)
+    }
+
+    @objc private func systemClockDidChange() {
+        updateTime()
+        rebuildTimer()
     }
 
     @objc private func statusItemClicked(_ sender: Any?) {
@@ -111,6 +129,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         displayOptions.compactTime.toggle()
         displayOptions.save()
         updateTime()
+        rebuildTimer()
     }
 
     @objc private func toggleCompactDate() {
@@ -182,11 +201,18 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         if settingsWindowController == nil {
             settingsWindowController = SettingsWindowController(
                 styleStore: styleStore,
-                languageStore: languageStore
-            ) { [weak self] in
-                self?.presentFontPanel()
-            }
+                languageStore: languageStore,
+                displayOptions: displayOptions,
+                onPickCustomFont: { [weak self] in self?.presentFontPanel() },
+                onDisplayOptionsChanged: { [weak self] opts in
+                    self?.displayOptions = opts
+                    self?.updateTime()
+                    self?.rebuildTimer()
+                }
+            )
             _ = settingsWindowController!.window
+        } else {
+            settingsWindowController!.updateDisplayOptions(displayOptions)
         }
         NSApp.activate(ignoringOtherApps: true)
         settingsWindowController!.showWindow(nil)

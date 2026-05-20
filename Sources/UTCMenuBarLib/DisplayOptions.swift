@@ -9,7 +9,7 @@ public struct DisplayOptions: Equatable, Sendable {
     public static let compactTimeKey = "displayOptions.compactTime"
     public static let compactDateKey = "displayOptions.compactDate"
 
-    public static let `default` = DisplayOptions(showDate: false, compactTime: false, compactDate: false)
+    public static let `default` = DisplayOptions(showDate: true, compactTime: true, compactDate: true)
 
     public init(showDate: Bool = false, compactTime: Bool = false, compactDate: Bool = false) {
         self.showDate = showDate

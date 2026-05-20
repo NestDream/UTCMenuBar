@@ -9,8 +9,7 @@ struct ClockPopoverView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            // Arrow pointing up toward the status item
-            ArrowUp()
+            Triangle()
                 .fill(.ultraThinMaterial)
                 .frame(width: 16, height: 8)
 
@@ -23,14 +22,14 @@ struct ClockPopoverView: View {
 
                 Divider()
 
-                VStack(spacing: 4) {
-                    popoverButton(
+                VStack(spacing: 2) {
+                    PopoverButton(
                         title: Strings.t(.menuSettings, language: viewModel.language),
                         systemImage: "gearshape",
                         shortcut: "⌘,",
                         action: onSettings
                     )
-                    popoverButton(
+                    PopoverButton(
                         title: Strings.t(.menuTimezoneConverter, language: viewModel.language),
                         systemImage: "globe",
                         shortcut: "⌘T",
@@ -40,7 +39,7 @@ struct ClockPopoverView: View {
                     Divider()
                         .padding(.vertical, 4)
 
-                    popoverButton(
+                    PopoverButton(
                         title: Strings.t(.menuQuit, language: viewModel.language),
                         systemImage: "power",
                         shortcut: "⌘Q",
@@ -49,12 +48,23 @@ struct ClockPopoverView: View {
                 }
             }
             .padding(16)
-            .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12))
+            .background(.ultraThinMaterial, in: UnevenRoundedRectangle(
+                topLeadingRadius: 4, bottomLeadingRadius: 12,
+                bottomTrailingRadius: 12, topTrailingRadius: 4
+            ))
         }
         .frame(width: 260)
     }
+}
 
-    private func popoverButton(title: String, systemImage: String, shortcut: String, action: @escaping () -> Void) -> some View {
+private struct PopoverButton: View {
+    let title: String
+    let systemImage: String
+    let shortcut: String
+    let action: () -> Void
+    @State private var isHovered = false
+
+    var body: some View {
         Button(action: action) {
             HStack(spacing: 8) {
                 Image(systemName: systemImage)
@@ -69,14 +79,18 @@ struct ClockPopoverView: View {
             }
             .contentShape(Rectangle())
             .padding(.horizontal, 8)
-            .padding(.vertical, 5)
+            .padding(.vertical, 6)
+            .background(
+                RoundedRectangle(cornerRadius: 6)
+                    .fill(isHovered ? Color.primary.opacity(0.08) : Color.clear)
+            )
         }
         .buttonStyle(.plain)
+        .onHover { isHovered = $0 }
     }
 }
 
-/// A small triangle pointing upward, used as the popover arrow.
-private struct ArrowUp: Shape {
+private struct Triangle: Shape {
     func path(in rect: CGRect) -> Path {
         var p = Path()
         p.move(to: CGPoint(x: rect.midX, y: rect.minY))
