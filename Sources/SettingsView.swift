@@ -8,6 +8,33 @@ struct SettingsView: View {
     var body: some View {
         VStack(spacing: 0) {
             Form {
+                Section(viewModel.label(.settingsSectionGeneral)) {
+                    Toggle(viewModel.label(.settingsLaunchAtLogin), isOn: $viewModel.launchAtLogin)
+                    if viewModel.launchAtLoginRequiresApproval {
+                        HStack(spacing: 8) {
+                            Image(systemName: "exclamationmark.triangle.fill")
+                                .foregroundStyle(.orange)
+                            Text(viewModel.label(.launchAtLoginRequiresApproval))
+                                .font(.system(size: 11))
+                                .foregroundStyle(.secondary)
+                            Spacer()
+                            Button(viewModel.label(.launchAtLoginOpenSettings)) {
+                                LaunchAtLoginManager.openLoginItemsInSystemSettings()
+                            }
+                            .controlSize(.small)
+                        }
+                    }
+                    if let error = viewModel.launchAtLoginError {
+                        HStack(spacing: 8) {
+                            Image(systemName: "xmark.octagon.fill")
+                                .foregroundStyle(.red)
+                            Text("\(viewModel.label(.launchAtLoginErrorTitle)): \(error)")
+                                .font(.system(size: 11))
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                }
+
                 Section {
                     Toggle(viewModel.label(.menuShowDate), isOn: $viewModel.showDate)
                     Toggle(viewModel.label(.menuCompactTime), isOn: $viewModel.compactTime)
@@ -131,6 +158,24 @@ final class SettingsViewModel2: ObservableObject {
     @Published var language: AppLanguage = .en
     @Published var previewText: String = ""
 
+    @Published var launchAtLogin: Bool {
+        didSet {
+            guard !isSyncing else { return }
+            do {
+                try LaunchAtLoginManager.setEnabled(launchAtLogin)
+                launchAtLoginError = nil
+            } catch {
+                launchAtLoginError = error.localizedDescription
+                isSyncing = true
+                launchAtLogin = LaunchAtLoginManager.isEnabled
+                isSyncing = false
+            }
+            launchAtLoginRequiresApproval = LaunchAtLoginManager.requiresApproval
+        }
+    }
+    @Published var launchAtLoginRequiresApproval: Bool = false
+    @Published var launchAtLoginError: String?
+
     init(
         styleStore: StyleOptionsStore,
         languageStore: LanguageStore,
@@ -156,6 +201,9 @@ final class SettingsViewModel2: ObservableObject {
 
         self.appLanguage = languageStore.current
         self.language = languageStore.current
+
+        self.launchAtLogin = LaunchAtLoginManager.isEnabled
+        self.launchAtLoginRequiresApproval = LaunchAtLoginManager.requiresApproval
 
         updatePreview()
 

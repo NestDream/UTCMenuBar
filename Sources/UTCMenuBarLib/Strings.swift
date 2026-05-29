@@ -83,6 +83,13 @@ public enum StringKey: String, CaseIterable, Sendable {
     case converterErrorInvalidFormat
     case converterErrorYearOutOfRange
     case converterErrorUnknownTimezone
+
+    // Launch at login
+    case settingsSectionGeneral
+    case settingsLaunchAtLogin
+    case launchAtLoginRequiresApproval
+    case launchAtLoginOpenSettings
+    case launchAtLoginErrorTitle
 }
 
 public enum Strings {
@@ -177,6 +184,12 @@ public enum Strings {
         .converterErrorInvalidFormat: "Invalid format. Use YYYY-MM-DD HH:MM:SS",
         .converterErrorYearOutOfRange: "Year out of range (1900-2100)",
         .converterErrorUnknownTimezone: "Unknown timezone",
+
+        .settingsSectionGeneral: "General",
+        .settingsLaunchAtLogin: "Launch at login",
+        .launchAtLoginRequiresApproval: "Pending approval — open System Settings to enable",
+        .launchAtLoginOpenSettings: "Open Login Items…",
+        .launchAtLoginErrorTitle: "Couldn't change launch-at-login setting",
     ]
 
     private static let zh: [StringKey: String] = [
@@ -251,5 +264,11 @@ public enum Strings {
         .converterErrorInvalidFormat: "无法解析时间，请使用 YYYY-MM-DD HH:MM:SS 格式",
         .converterErrorYearOutOfRange: "年份超出范围（1900-2100）",
         .converterErrorUnknownTimezone: "未知时区",
+
+        .settingsSectionGeneral: "通用",
+        .settingsLaunchAtLogin: "开机启动",
+        .launchAtLoginRequiresApproval: "等待系统授权 — 请前往「系统设置」启用",
+        .launchAtLoginOpenSettings: "打开登录项设置…",
+        .launchAtLoginErrorTitle: "无法更改开机启动设置",
     ]
 }
