@@ -46,4 +46,8 @@ final class SettingsWindowController: NSWindowController, NSWindowDelegate {
     func updateDisplayOptions(_ opts: DisplayOptions) {
         viewModel?.updateDisplayOptions(opts)
     }
+
+    func windowDidBecomeKey(_ notification: Notification) {
+        viewModel?.refreshLaunchAtLogin()
+    }
 }

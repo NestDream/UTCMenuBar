@@ -1,6 +1,17 @@
 import Foundation
 import ServiceManagement
 
+enum BundleInfo {
+    static var shortVersion: String {
+        Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "—"
+    }
+    static var buildNumber: String {
+        Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "—"
+    }
+    static let releasesURL = URL(string: "https://github.com/NestDream/UTCMenuBar/releases")!
+}
+
+
 @MainActor
 enum LaunchAtLoginManager {
     enum LaunchAtLoginError: Error {

@@ -90,6 +90,11 @@ public enum StringKey: String, CaseIterable, Sendable {
     case launchAtLoginRequiresApproval
     case launchAtLoginOpenSettings
     case launchAtLoginErrorTitle
+
+    // About section
+    case settingsSectionAbout
+    case aboutVersion
+    case aboutViewReleases
 }
 
 public enum Strings {
@@ -190,6 +195,10 @@ public enum Strings {
         .launchAtLoginRequiresApproval: "Pending approval — open System Settings to enable",
         .launchAtLoginOpenSettings: "Open Login Items…",
         .launchAtLoginErrorTitle: "Couldn't change launch-at-login setting",
+
+        .settingsSectionAbout: "About",
+        .aboutVersion: "Version",
+        .aboutViewReleases: "View releases on GitHub",
     ]
 
     private static let zh: [StringKey: String] = [
@@ -270,5 +279,9 @@ public enum Strings {
         .launchAtLoginRequiresApproval: "等待系统授权 — 请前往「系统设置」启用",
         .launchAtLoginOpenSettings: "打开登录项设置…",
         .launchAtLoginErrorTitle: "无法更改开机启动设置",
+
+        .settingsSectionAbout: "关于",
+        .aboutVersion: "版本",
+        .aboutViewReleases: "在 GitHub 查看发行版",
     ]
 }

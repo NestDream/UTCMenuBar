@@ -110,10 +110,19 @@ struct SettingsView: View {
                         Spacer()
                     }
                 }
+
+                Section(viewModel.label(.settingsSectionAbout)) {
+                    LabeledContent(viewModel.label(.aboutVersion)) {
+                        Text("\(BundleInfo.shortVersion) (\(BundleInfo.buildNumber))")
+                            .foregroundStyle(.secondary)
+                            .textSelection(.enabled)
+                    }
+                    Link(viewModel.label(.aboutViewReleases), destination: BundleInfo.releasesURL)
+                }
             }
             .formStyle(.grouped)
         }
-        .frame(width: 380, height: 480)
+        .frame(width: 380, height: 540)
     }
 }
 
@@ -237,6 +246,16 @@ final class SettingsViewModel2: ObservableObject {
         showDate = opts.showDate
         compactTime = opts.compactTime
         compactDate = opts.compactDate
+    }
+
+    func refreshLaunchAtLogin() {
+        let actual = LaunchAtLoginManager.isEnabled
+        if launchAtLogin != actual {
+            isSyncing = true
+            launchAtLogin = actual
+            isSyncing = false
+        }
+        launchAtLoginRequiresApproval = LaunchAtLoginManager.requiresApproval
     }
 
     private func saveDisplayOptions() {
