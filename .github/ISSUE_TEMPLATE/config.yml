@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Questions & general discussion
+    url: https://github.com/NestDream/UTCMenuBar/discussions
+    about: Ask questions, share ideas, and discuss UTCMenuBar with the community here. Please do not open an issue for general questions.
+  - name: Releases & downloads
+    url: https://github.com/NestDream/UTCMenuBar/releases
+    about: Download the latest release and read the changelog before reporting a bug.

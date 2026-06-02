@@ -1,0 +1,67 @@
+name: Bug report
+description: Report something that is broken or behaving incorrectly in UTCMenuBar.
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to file a bug report!
+
+        Before submitting, please make sure you are on the latest release and that a similar issue does not already exist. The more detail you provide, the faster we can reproduce and fix the problem.
+
+  - type: input
+    id: app-version
+    attributes:
+      label: App version
+      description: "The UTCMenuBar version shown in Settings ▸ About (e.g. 1.0.0)."
+      placeholder: "1.0.0"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: macos-version
+    attributes:
+      label: macOS version
+      description: Which version of macOS are you running?
+      options:
+        - macOS 15 (Sequoia)
+        - macOS 14 (Sonoma)
+        - macOS 13 (Ventura)
+        - Other / older (please mention in the steps below)
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps-to-reproduce
+    attributes:
+      label: Steps to reproduce
+      description: A clear, numbered list of the exact steps that trigger the bug.
+      placeholder: |
+        1. Launch UTCMenuBar
+        2. Left-click the menu bar item to open the popover
+        3. ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected-vs-actual
+    attributes:
+      label: Expected vs actual behavior
+      description: Describe what you expected to happen, and what actually happened instead. Screenshots are welcome.
+      placeholder: |
+        Expected: the popover shows the current UTC time.
+        Actual: the popover is blank / shows the wrong time / ...
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: confirmations
+    attributes:
+      label: Confirmation
+      description: Please confirm the following before submitting.
+      options:
+        - label: I am running the latest release of UTCMenuBar.
+          required: true
+        - label: I have searched the existing issues and this bug has not already been reported.
+          required: true

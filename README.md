@@ -71,21 +71,16 @@ no telemetry, ~5 MB binary.
 
 ### Screenshots
 
-Default view in the menu bar:
+> Screenshots are being added — see [Releases](https://github.com/NestDream/UTCMenuBar/releases)
+> for the app in the meantime.
 
-![menu bar default](docs/screenshots/menubar-default.png)
+<!-- Screenshots will be placed in docs/screenshots/ and linked here:
+- menubar-default.png    — the styled UTC item in the menu bar
+- dropdown-menu.png      — the left-click Liquid-Glass popover
+- settings-window.png    — the Settings window with live preview
+- visual-distinction.png — UTC styled distinctly next to the system clock
+-->
 
-Dropdown menu showing display + appearance options:
-
-![dropdown menu](docs/screenshots/dropdown-menu.png)
-
-Settings window with live preview:
-
-![settings window](docs/screenshots/settings-window.png)
-
-UTC styled distinctly next to the system clock (the point of the app):
-
-![visual distinction](docs/screenshots/visual-distinction.png)
 
 ---
 

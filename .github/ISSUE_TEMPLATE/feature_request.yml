@@ -1,0 +1,46 @@
+name: Feature request
+description: Suggest a new feature or an improvement to UTCMenuBar.
+title: "[Feature]: "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for sharing an idea to improve UTCMenuBar!
+
+        Please describe the problem you are trying to solve before jumping to a solution — it helps us understand the motivation and explore the best approach.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem / motivation
+      description: What problem are you trying to solve? What is frustrating or missing today?
+      placeholder: "I often need to ... but UTCMenuBar currently ..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposed-solution
+    attributes:
+      label: Proposed solution
+      description: Describe the feature or change you would like to see, and how you imagine it working.
+      placeholder: "Add an option in Settings to ..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Have you considered any alternative solutions or workarounds? Why are they not sufficient?
+      placeholder: "I tried ... but ..."
+    validations:
+      required: false
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional context
+      description: Add any other context, mockups, or screenshots about the feature request here.
+    validations:
+      required: false
