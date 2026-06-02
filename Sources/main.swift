@@ -58,16 +58,40 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     private func rebuildTimer() {
         timer?.invalidate()
-        let interval: TimeInterval = displayOptions.compactTime ? 60.0 : 1.0
-        timer = Timer.scheduledTimer(withTimeInterval: interval, repeats: true) { [weak self] _ in
+        let interval = TimerScheduling.interval(compactTime: displayOptions.compactTime)
+        // Align the first fire to the next boundary (whole second, or top of the
+        // minute in compact mode) so the displayed value never lags behind reality.
+        let delay = TimerScheduling.delayToNextBoundary(after: Date(), interval: interval)
+        let aligned = Timer(timeInterval: delay, repeats: false) { [weak self] _ in
+            Task { @MainActor in
+                guard let self else { return }
+                self.updateTime()
+                self.startRepeatingTimer(interval: interval)
+            }
+        }
+        timer = aligned
+        RunLoop.current.add(aligned, forMode: .common)
+    }
+
+    private func startRepeatingTimer(interval: TimeInterval) {
+        timer?.invalidate()
+        let repeating = Timer(timeInterval: interval, repeats: true) { [weak self] _ in
             Task { @MainActor in self?.updateTime() }
         }
-        RunLoop.current.add(timer!, forMode: .common)
+        timer = repeating
+        RunLoop.current.add(repeating, forMode: .common)
     }
 
     @objc private func systemClockDidChange() {
         updateTime()
         rebuildTimer()
+    }
+
+    func applicationWillTerminate(_ notification: Notification) {
+        timer?.invalidate()
+        timer = nil
+        NotificationCenter.default.removeObserver(self)
+        NSWorkspace.shared.notificationCenter.removeObserver(self)
     }
 
     @objc private func statusItemClicked(_ sender: Any?) {

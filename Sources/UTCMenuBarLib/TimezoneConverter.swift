@@ -11,7 +11,7 @@ public enum TimezoneConverter {
     public static let formatPattern = "yyyy-MM-dd HH:mm:ss"
 
     public static func parseUTC(_ string: String) -> Result<Date, ConversionError> {
-        parse(string, timeZone: TimeZone(identifier: "UTC")!)
+        parse(string, timeZone: .utc)
     }
 
     public static func parseInTimezone(_ string: String, timezone: TimeZone) -> Result<Date, ConversionError> {
@@ -19,9 +19,10 @@ public enum TimezoneConverter {
     }
 
     public static func format(date: Date, in timezone: TimeZone) -> String {
-        let formatter = posixFormatter()
-        formatter.timeZone = timezone
-        return formatter.string(from: date)
+        withFormatter { f in
+            f.timeZone = timezone
+            return f.string(from: date)
+        }
     }
 
     public static func convertUTCToTarget(_ utcString: String, targetTimezoneId: String) -> Result<String, ConversionError> {
@@ -42,7 +43,7 @@ public enum TimezoneConverter {
         }
         switch parseInTimezone(targetString, timezone: tz) {
         case .success(let date):
-            return .success(format(date: date, in: TimeZone(identifier: "UTC")!))
+            return .success(format(date: date, in: .utc))
         case .failure(let err):
             return .failure(err)
         }
@@ -52,7 +53,7 @@ public enum TimezoneConverter {
         guard let tz = TimeZone(identifier: targetTimezoneId) else { return nil }
         let date = Date()
         return (
-            utc: format(date: date, in: TimeZone(identifier: "UTC")!),
+            utc: format(date: date, in: .utc),
             target: format(date: date, in: tz)
         )
     }
@@ -61,12 +62,11 @@ public enum TimezoneConverter {
         let trimmed = string.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { return .failure(.invalidFormat) }
 
-        let formatter = posixFormatter()
-        formatter.timeZone = timeZone
-
-        guard let date = formatter.date(from: trimmed) else {
-            return .failure(.invalidFormat)
+        let date: Date? = withFormatter { f in
+            f.timeZone = timeZone
+            return f.date(from: trimmed)
         }
+        guard let date else { return .failure(.invalidFormat) }
 
         var calendar = Calendar(identifier: .gregorian)
         calendar.timeZone = timeZone
@@ -78,10 +78,17 @@ public enum TimezoneConverter {
         return .success(date)
     }
 
-    private static func posixFormatter() -> DateFormatter {
+    // A single cached POSIX formatter, reused across calls. All access is on the
+    // main thread in this app, and DateFormatter mutation+use here is synchronous
+    // and non-reentrant, so the shared instance is safe.
+    private static let sharedFormatter: DateFormatter = {
         let f = DateFormatter()
         f.locale = Locale(identifier: "en_US_POSIX")
         f.dateFormat = formatPattern
         return f
+    }()
+
+    private static func withFormatter<T>(_ body: (DateFormatter) -> T) -> T {
+        body(sharedFormatter)
     }
 }

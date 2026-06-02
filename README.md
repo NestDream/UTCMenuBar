@@ -7,8 +7,9 @@ distinct from your system clock so you never confuse the two.
 🌐 14:30:25 UTC
 ```
 
-> Status: pre-1.0. Two features shipped (display options, visual distinction).
-> Timezone converter is the next planned feature.
+> Status: 1.0. Shipped: display options, visual distinction, English + 中文 UI
+> (switchable at runtime), bidirectional timezone converter, Liquid-Glass
+> popover, in-app launch-at-login, and an About/version panel.
 
 ---
 
@@ -43,13 +44,28 @@ no telemetry, ~5 MB binary.
   - Compact time (`HH:mm` instead of `HH:mm:ss`)
   - Compact date (`MM/dd` instead of `yyyy-MM-dd`)
 - **Visual distinction options** (Appearance submenu and Settings window):
-  - Font family — System / Menlo / SF Mono
+  - Font family — System / Menlo / SF Mono, **plus any installed font** via the
+    macOS font panel
   - Weight — Regular / Medium / Semibold / Bold
   - Size — Small / Standard / Large (±2pt around the menu bar default)
   - Color — Default / Blue / Green / Orange / Purple / Red (system dynamic colors, dark-mode safe)
+  - Icon prefix — Globe `🌐` / Clock `🕐` / Compass `🧭` / Earth `🌍` / none (5 options)
   - Decorator — none / `[brackets]` / `(parentheses)` / `│bars│`
+- **Liquid-Glass popover** — left-click the menu bar icon to open a popover
+  (`ultraThinMaterial`) with a large live UTC readout and quick buttons for
+  Settings, the Converter, and Quit. Right-click still shows the classic menu.
+- **Bidirectional timezone converter** (`⌘T`) — type a UTC time and see the
+  equivalent in selected zones, or type a local time and read back UTC.
+- **Localized UI** — English and Simplified Chinese, switchable at runtime from
+  the Appearance ▸ Language submenu or the Settings window; defaults to your
+  system language on first launch.
+- **Launch at login** — toggle inside Settings (backed by `SMAppService`); no
+  manual System Settings drag required.
 - **Settings window** with live preview, opens with `⌘,`
+- **About / version panel** — shows the version baked in from the release tag
 - **Persists** all settings to `UserDefaults`; survives restarts
+- **Multi-display aware** — the popover clamps its position to the active
+  screen's visible frame (menu-bar/notch safe)
 - **Dock-less** (`LSUIElement`); pure menu bar accessory app
 - **Free, open source, no account, no telemetry, no network requests**
 
@@ -86,8 +102,8 @@ cd UTCClock
 open UTCMenuBar.app
 ```
 
-To launch on every login: drag `UTCMenuBar.app` into
-`System Settings → General → Login Items → Open at Login`.
+To launch on every login: open **Settings (`⌘,`)** and toggle **Launch at
+login** — the app registers itself via `SMAppService`, no manual drag needed.
 
 ### Run as an SPM executable (for development)
 
@@ -102,13 +118,18 @@ running — it is not daemonized. Use the `.app` bundle for daily driving.
 
 ## Usage
 
-Click the `🌐` icon in the menu bar to open the dropdown:
+**Left-click** the `🌐` icon to open the Liquid-Glass popover — a large live
+UTC readout with quick buttons for Settings, the Converter, and Quit.
+
+**Right-click** the icon for the classic dropdown menu:
 
 - Toggle **Show date / Compact time / Compact date**
 - Open the **Appearance** submenu to pick font / weight / size / color /
-  icon / decorator
+  icon / decorator (pick **Custom…** under font to choose any installed font)
 - Pick a **Language** (English / 中文) — same submenu, switches instantly
-- Open **Settings… (`⌘,`)** for the same controls in a window with live preview
+- Open the **Timezone converter (`⌘T`)** to convert UTC ↔ other zones
+- Open **Settings… (`⌘,`)** for the same controls in a window with live preview,
+  plus the **Launch at login** toggle
 - **Quit (`⌘Q`)** to exit
 
 > UI is available in English and Simplified Chinese. The app picks one based
@@ -253,26 +274,26 @@ companion), **iStat Menus** (commercial system suite). Cells: ✓ = supported,
 | ISO-8601 / RFC 3339 menubar | ✗ | ✓ | ✗ | ? | ✗ | ? |
 | Custom format string | ✗ | ✗ | ✗ | ✗ | ✗ | ✓ |
 | **Visual distinction** | | | | | | |
-| Custom font family | ✓ (System / Menlo / SF Mono) | ✗ | ✗ | ✗ | ✗ | ? |
+| Custom font family | ✓ (System / Menlo / SF Mono + any installed font) | ✗ | ✗ | ✗ | ✗ | ? |
 | Custom font weight | ✓ | ✗ | ✗ | ✗ | ✗ | ? |
 | Custom font size | ✓ (±2pt) | ✗ | ✗ | ✗ | ✗ | ? |
 | Custom color | ✓ (6 system-dynamic colors) | ✗ | ✗ | ✓ (4 themes, popover only) | ✗ | ? |
 | Decorator / brackets / bars | ✓ (4 styles) | ✗ | ◐ (`Z` / `UTC` suffix) | ✗ | ✗ | ✗ |
-| Custom emoji prefix | ✗ <sup>4</sup> | ✗ | ✗ | ✗ | ✗ | ✗ |
+| Custom emoji prefix | ✓ (5 options) | ✗ | ✗ | ✗ | ✗ | ✗ |
 | **Interactions** | | | | | | |
 | Click-to-copy current time | ✗ <sup>4</sup> | ✓ (current format + ISO-8601) | ✓ (display / Unix / RFC 3339) | ? | ✗ | ? |
-| Bidirectional timezone converter | ✗ <sup>4</sup> | ✗ | ✗ | ◐ (time scrubber) | ✗ | ? |
+| Bidirectional timezone converter | ✓ | ✗ | ✗ | ◐ (time scrubber) | ✗ | ? |
 | Time-travel slider / scrubber | ✗ | ✗ | ✗ | ✓ (±7 days, 15-min steps) | ✗ | ✗ |
 | Global hotkey | ✗ | ✗ | ✓ | ✓ (⌘L) | ? | ? |
 | Settings window with live preview | ✓ | ✗ | ✗ | ✓ | ✓ | ✓ |
 | **Integrations** | | | | | | |
-| Launch at login (in-app) | ✗ <sup>4</sup> | ✓ | ? | ✓ | ? | ✓ |
+| Launch at login (in-app) | ✓ | ✓ | ? | ✓ | ? | ✓ |
 | Calendar / meeting integration | ✗ | ✗ | ✗ | ✓ (Apple Calendar, one-click join Zoom/Meet/Teams) | ✗ | ✓ |
 | Sun / moon data | ✗ | ✗ | ✗ | ◐ (day/night) | ✗ | ✓ |
 | Weather data | ✗ | ✗ | ✗ | ✗ | ✗ | ✓ |
 | iCloud sync | ✗ | ✗ | ✗ | ✓ | ✗ | ? |
 | Multi-display awareness | ✗ <sup>5</sup> | ✗ <sup>5</sup> | ✗ <sup>5</sup> | ✗ <sup>5</sup> | ✗ <sup>5</sup> | ✗ <sup>5</sup> |
-| Localization (UI) | ✗ (Chinese menu strings only) | ✗ (English) | ✗ (English) | ✓ (Crowdin community) | ✗ (English) | ✓ |
+| Localization (UI) | ✓ (English + 中文) | ✗ (English) | ✗ (English) | ✓ (Crowdin community) | ✗ (English) | ✓ |
 | Distribution (.app available) | source-build only | unsigned binary on GitHub | source build free / signed $5 | Homebrew cask + GitHub release | Homebrew cask + there.pm | direct buy + Setapp |
 
 <sup>1</sup> iStat Menus' single-license price is no longer published on the
@@ -310,8 +331,8 @@ job:
 - **Pick UTCMenuBar if** you only need UTC, you want it to look
   unambiguously different from the system clock right next to it, you want a
   Swift / AppKit OSS app you can audit, no account / payment / telemetry,
-  and you'd benefit from the planned timezone converter and click-to-copy.
-  Best for: SREs / on-call / aviation / log triage / AWS console work.
+  and you'd use the built-in UTC ↔ zone converter. Best for: SREs / on-call /
+  aviation / log triage / AWS console work.
 
 - **Pick `netik/UTCMenuClock` if** you want a long-established OSS UTC
   clock with built-in launch-at-login and click-to-copy in ISO-8601, and
@@ -347,21 +368,20 @@ job:
 
 Things competitors do better, today:
 
-- **Single timezone (UTC) only.** If you need UTC and PT side by side,
-  UTCMenuBar can't do it today. Clocker, There, Whenish, world-clock, and
-  Meridian all can. (See [Roadmap](#roadmap) for the planned converter,
-  which is a different shape from "multi-timezone in the menu bar.")
+- **Single timezone (UTC) in the menu bar.** If you need UTC and PT *both
+  pinned in the menu bar* at once, UTCMenuBar can't do it today. Clocker,
+  There, Whenish, world-clock, and Meridian all can. (The shipped converter
+  handles ad-hoc UTC ↔ zone math, but that's a different shape from
+  "multi-timezone in the menu bar.")
 - **No click-to-copy yet.** ZuluBar and UTCMenuClock both ship this; it's on
   the roadmap here.
 - **No 24h/12h toggle.** Currently 24h-only. (Planned.)
-- **No launch-at-login toggle in-app.** You drag the .app into Login Items
-  manually. UTCMenuClock and Clocker do this from a menu item. (Planned.)
 - **No calendar / meeting integration.** Clocker is the gold standard here;
   this app explicitly does not try to compete.
 - **No Mac App Store build, no signed/notarized release artifacts yet.**
   Build from source for now.
-- **Menu strings are Chinese.** English localization is on the roadmap.
-- **Pre-1.0**, low star count, not yet battle-tested. Bug reports welcome.
+- **Just reached 1.0** — young project, modest star count, not yet
+  battle-tested. Bug reports welcome.
 
 ---
 
@@ -369,24 +389,20 @@ Things competitors do better, today:
 
 Concrete next steps, roughly in priority order:
 
-- [ ] **Timezone converter (UTC ↔ other zones, bidirectional).**
-  Type a UTC time and see the equivalent in selected local zones, or type a
-  local time and see UTC. Currently in design phase under `specs/`.
-- [ ] **Custom prefix / suffix.** Replace `🌐` and `UTC` with user-supplied
-  strings (e.g. `Z`, `Zulu`, no prefix at all).
-- [ ] **English localization** of menu strings (currently Chinese-only).
+- [ ] **24h / 12h toggle.** Currently 24h-only.
 - [ ] **Click-to-copy** the current UTC timestamp in multiple formats (Unix
   epoch, ISO 8601 / RFC 3339).
-- [ ] **Launch at login** toggle inside the app (currently a manual System
-  Settings step).
-- [ ] **Mac App Store** distribution (only after the converter ships).
+- [ ] **ISO-8601 / custom format string** for the menu bar readout.
+- [ ] **Free-text prefix / suffix + full emoji picker.** Beyond the five
+  built-in icons, let users supply any string or emoji (e.g. `Z`, `Zulu`).
+- [ ] **Global hotkey** to open the popover, Settings, or the converter.
+- [ ] **Mac App Store** distribution.
 - [ ] **Signed / notarized release builds** + GitHub Releases artifacts.
 
 Lower priority:
 
 - [ ] Multiple-timezone menu bar display (would expand scope significantly —
   may stay out of scope on purpose).
-- [ ] Custom hotkey to open the Settings window or the (planned) converter.
 - [ ] More decorators / more colors / per-glyph styling.
 
 ---

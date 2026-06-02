@@ -1,8 +1,8 @@
 # UTCMenuBar
 
-A lightweight macOS menu bar app that displays UTC time, designed to be visually distinct from the system clock. macOS 13+, Swift 6, AppKit.
+A lightweight macOS menu bar app that displays UTC time, designed to be visually distinct from the system clock. macOS 13+, Swift 6, AppKit + a thin SwiftUI layer (popover & Settings form via `NSHostingView`).
 
-The status item shows e.g. `🌐 14:30:25 UTC`. Users can toggle date display, compact time/date format, and (future feature) custom font/color/decorators via the dropdown menu.
+The status item shows e.g. `🌐 14:30:25 UTC`. Left-clicking opens a Liquid-Glass-style popover (live time + Settings/Converter/Quit); right-clicking opens the classic `NSMenu`. Users can toggle date / compact formats, customize font family/weight/size/color/icon-prefix/decorator, switch UI language (English / 中文), open a bidirectional timezone converter, and enable launch-at-login.
 
 ## Repo layout
 
@@ -10,15 +10,28 @@ The status item shows e.g. `🌐 14:30:25 UTC`. Users can toggle date display, c
 .
 ├── Package.swift          # SPM manifest — single source of truth
 ├── Sources/
-│   ├── UTCMenuBarLib/     # testable library (DisplayOptions, TimeFormatter, MenuBuilder)
-│   └── main.swift         # executable: AppDelegate + NSApp boot
+│   ├── UTCMenuBarLib/     # testable, AppKit-light library (pure logic)
+│   │   ├── DisplayOptions / StyleOptions / TimezoneConverterOptions  (models + UserDefaults)
+│   │   ├── TimeFormatter / StyledTextBuilder / TimezoneConverter     (formatting/conversion)
+│   │   ├── MenuBuilder / SettingsViewModel                            (menu + control mapping)
+│   │   ├── Strings / AppLanguage                                      (i18n table)
+│   │   ├── TimerScheduling / TimeZone+UTC / PopoverLayout             (pure helpers)
+│   ├── main.swift                       # AppDelegate: status item, timer, menu, windows
+│   ├── PopoverController.swift          # NSPanel popover (left-click)
+│   ├── ClockPopoverView(Model).swift    # SwiftUI popover content + VM
+│   ├── SettingsView.swift               # SwiftUI Settings form + SettingsViewModel2
+│   ├── SettingsWindowController.swift   # hosts SettingsView
+│   ├── TimezoneConverterWindowController.swift
+│   ├── StyleOptionsStore / LanguageStore / TimezoneConverterStore.swift  (token-based listeners)
+│   └── LaunchAtLoginManager.swift       # SMAppService + BundleInfo
 ├── Tests/UTCMenuBarTests/ # custom test runner (no XCTest — uses fatalError)
 ├── scripts/
-│   ├── build-app.sh       # builds UTCMenuBar.app bundle
+│   ├── build-app.sh       # builds UTCMenuBar.app bundle (version from latest git tag)
 │   └── test.sh            # runs the test executable
 ├── specs/                 # feature specs (requirements / design / tasks)
-│   ├── display-options/   # DONE — implemented in UTCMenuBarLib
-│   └── visual-distinction/# TODO — designed, not yet implemented
+│   ├── display-options/      # DONE
+│   ├── visual-distinction/   # DONE
+│   └── timezone-converter/   # DONE
 ├── AppIcon.icns           # bundle icon (also AppIcon.iconset/, icon.png source)
 └── _archive/              # legacy Xcode project — do not modify (see _archive/README.md)
 ```
@@ -35,13 +48,14 @@ open UTCMenuBar.app          # launch the bundled app
 
 ## Architecture
 
-Three small modules in `UTCMenuBarLib`:
+**Library (`UTCMenuBarLib`)** — pure, testable logic. Models (`DisplayOptions`, `StyleOptions`, `TimezoneConverterOptions`) own their `*.` UserDefaults keys and `save`/`load`. `TimeFormatter` and `TimezoneConverter` cache their `DateFormatter`s and use the shared `TimeZone.utc` constant. `MenuBuilder` builds the `NSMenu` from options + language + selectors. `Strings`/`AppLanguage` back the i18n table. `TimerScheduling` / `PopoverLayout` are pure helpers extracted so timing and positioning are unit-testable.
 
-- **[DisplayOptions](Sources/UTCMenuBarLib/DisplayOptions.swift)** — `Equatable, Sendable` struct holding `showDate`/`compactTime`/`compactDate` bools. Owns its UserDefaults keys (`displayOptions.*`) and `save`/`load` round-trip.
-- **[TimeFormatter](Sources/UTCMenuBarLib/TimeFormatter.swift)** — pure functions that format a `Date` + `DisplayOptions` into the display string. Always wraps output in `🌐 ` … ` UTC`.
-- **[MenuBuilder](Sources/UTCMenuBarLib/MenuBuilder.swift)** — builds the `NSMenu` from `DisplayOptions` and a set of selectors. Stateless; rebuilds the whole menu on every option change (cheap — 5 items).
+**App target** — AppKit glue + a thin SwiftUI layer:
+- `AppDelegate` holds the `NSStatusItem`, an interval-adaptive `Timer` (1s normally, 60s aligned to the minute in compact mode), and the three stores. Left-click → `PopoverController`; right-click → `MenuBuilder` menu. Listens for `NSSystemClockDidChange` + wake to re-tick.
+- The three **stores** (`StyleOptionsStore`, `LanguageStore`, `TimezoneConverterStore`) are the single sources of truth. They use token-based `addListener`/`removeListener`; menu, popover, and Settings all subscribe.
+- SwiftUI views (`ClockPopoverView`, `SettingsView`) are hosted in `NSHostingView`/`NSHostingController`. Their view models bridge the stores; `SettingsViewModel2` uses an `isSyncing` flag so store→VM syncs don't re-trigger VM→store writes.
 
-`AppDelegate` in [main.swift](Sources/main.swift) wires it together: holds the `NSStatusItem`, a 1-second `Timer`, and the current `DisplayOptions`. On any toggle: mutate options → `save()` → `buildMenu()` → `updateTime()`.
+State flow on a change: mutate via store `update {}` → store persists + fans out to listeners → menu/popover/menu-bar title refresh.
 
 ## Testing conventions
 
@@ -72,8 +86,8 @@ When implementing from a spec: walk down `tasks.md`, mark each `[x]` as you comp
 
 ## Conventions
 
-- **Menu strings are Chinese** (`显示日期`, `紧凑时间`, etc.). The Quit item stays English with `⌘Q`.
-- **UserDefaults keys** use dotted prefixes per feature: `displayOptions.*`, `styleOptions.*`.
+- **UI strings are bilingual** (English / 中文) via the `Strings` table keyed by `StringKey`; never hard-code a user-facing string — add a key with both translations. Language is chosen at runtime (`AppLanguage`), defaulting from the system locale.
+- **UserDefaults keys** use dotted prefixes per feature: `displayOptions.*`, `styleOptions.*`, `timezoneConverter.*`, `app.language`.
 - **Public API in UTCMenuBarLib** — anything used from `main.swift` must be `public`. The lib is `Sendable`-clean.
 - **No external dependencies** in Package.swift. Stay AppKit + Foundation only.
 - **`@_exported import Foundation`** is currently used in DisplayOptions.swift so `main.swift` doesn't need its own Foundation import. Don't add it elsewhere.

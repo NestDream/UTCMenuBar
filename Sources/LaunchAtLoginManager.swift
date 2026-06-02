@@ -1,5 +1,15 @@
 import Foundation
 import ServiceManagement
+import UTCMenuBarLib
+
+/// Production `LoginItemControlling` backed by `SMAppService`, injected into
+/// `SettingsViewModel2`. A fake conformer is used in tests.
+@MainActor
+struct SMAppServiceLoginItem: LoginItemControlling {
+    var isEnabled: Bool { LaunchAtLoginManager.isEnabled }
+    var requiresApproval: Bool { LaunchAtLoginManager.requiresApproval }
+    func setEnabled(_ enabled: Bool) throws { try LaunchAtLoginManager.setEnabled(enabled) }
+}
 
 enum BundleInfo {
     static var shortVersion: String {

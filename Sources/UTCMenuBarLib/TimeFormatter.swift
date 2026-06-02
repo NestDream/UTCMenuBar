@@ -2,7 +2,7 @@ import Foundation
 
 public enum TimeFormatter {
 
-    private static let utcZone = TimeZone(identifier: "UTC")!
+    private static let utcZone = TimeZone.utc
 
     private static let fullTimeFormatter: DateFormatter = {
         let f = DateFormatter()

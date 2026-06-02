@@ -6,10 +6,12 @@ import UTCMenuBarLib
 final class PopoverController {
     private var panel: NSPanel?
     private let statusItem: NSStatusItem
+    private let viewModel: ClockPopoverViewModel
     private var hostingView: NSHostingView<ClockPopoverView>?
     private var eventMonitor: Any?
+    private var isClosing = false
 
-    var isShown: Bool { panel?.isVisible ?? false }
+    var isShown: Bool { (panel?.isVisible ?? false) && !isClosing }
 
     init(
         statusItem: NSStatusItem,
@@ -27,6 +29,7 @@ final class PopoverController {
             languageStore: languageStore,
             displayOptionsProvider: displayOptionsProvider
         )
+        self.viewModel = viewModel
 
         let contentView = ClockPopoverView(
             viewModel: viewModel,
@@ -70,19 +73,24 @@ final class PopoverController {
 
     func show() {
         guard let panel, let button = statusItem.button, let buttonWindow = button.window else { return }
+        isClosing = false
 
         let fittingSize = hostingView?.fittingSize ?? NSSize(width: 260, height: 200)
         panel.setContentSize(fittingSize)
 
         let buttonRect = button.convert(button.bounds, to: nil)
         let screenRect = buttonWindow.convertToScreen(buttonRect)
+        let origin = PopoverLayout.origin(
+            buttonRect: screenRect,
+            popoverSize: fittingSize,
+            visibleFrame: (buttonWindow.screen ?? NSScreen.main)?.visibleFrame
+        )
 
-        let x = screenRect.midX - fittingSize.width / 2
-        let y = screenRect.minY - fittingSize.height - 4
-
-        panel.setFrameOrigin(NSPoint(x: x, y: y))
+        panel.setFrameOrigin(origin)
         panel.alphaValue = 0
         panel.orderFrontRegardless()
+
+        viewModel.startTicking()
 
         NSAnimationContext.runAnimationGroup { ctx in
             ctx.duration = 0.15
@@ -94,20 +102,35 @@ final class PopoverController {
     }
 
     func close() {
-        guard let panel, panel.isVisible else { return }
+        guard let panel, panel.isVisible, !isClosing else { return }
+        isClosing = true
         stopEventMonitor()
+        viewModel.stopTicking()
         NSAnimationContext.runAnimationGroup({ ctx in
             ctx.duration = 0.1
             ctx.timingFunction = CAMediaTimingFunction(name: .easeIn)
             panel.animator().alphaValue = 0
-        }, completionHandler: {
-            panel.orderOut(nil)
+        }, completionHandler: { [weak self] in
+            Task { @MainActor in
+                panel.orderOut(nil)
+                self?.isClosing = false
+            }
         })
     }
 
     private func startEventMonitor() {
         eventMonitor = NSEvent.addGlobalMonitorForEvents(matching: [.leftMouseDown, .rightMouseDown]) { [weak self] _ in
-            self?.close()
+            guard let self else { return }
+            // Ignore clicks on the status item itself — those are handled by
+            // statusItemClicked → toggle(), which closes the popover. Letting the
+            // monitor also fire would double-toggle (close then immediately reopen).
+            if let button = self.statusItem.button,
+               let window = button.window {
+                let buttonScreenRect = window.convertToScreen(button.convert(button.bounds, to: nil))
+                let mouse = NSEvent.mouseLocation
+                if buttonScreenRect.contains(mouse) { return }
+            }
+            self.close()
         }
     }
 

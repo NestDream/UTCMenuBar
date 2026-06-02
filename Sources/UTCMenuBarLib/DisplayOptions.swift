@@ -11,7 +11,7 @@ public struct DisplayOptions: Equatable, Sendable {
 
     public static let `default` = DisplayOptions(showDate: true, compactTime: true, compactDate: true)
 
-    public init(showDate: Bool = false, compactTime: Bool = false, compactDate: Bool = false) {
+    public init(showDate: Bool = true, compactTime: Bool = true, compactDate: Bool = true) {
         self.showDate = showDate
         self.compactTime = compactTime
         self.compactDate = compactDate
@@ -23,11 +23,17 @@ public struct DisplayOptions: Equatable, Sendable {
         defaults.set(compactDate, forKey: DisplayOptions.compactDateKey)
     }
 
+    /// Loads each option from UserDefaults. A key that has never been written
+    /// falls back to its `.default` value (not `false`), so a first launch with
+    /// no stored prefs shows the intended default (date + compact time + compact date).
     public static func load(from defaults: UserDefaults = .standard) -> DisplayOptions {
+        func bool(_ key: String, default fallback: Bool) -> Bool {
+            defaults.object(forKey: key) == nil ? fallback : defaults.bool(forKey: key)
+        }
         return DisplayOptions(
-            showDate: defaults.bool(forKey: showDateKey),
-            compactTime: defaults.bool(forKey: compactTimeKey),
-            compactDate: defaults.bool(forKey: compactDateKey)
+            showDate: bool(showDateKey, default: `default`.showDate),
+            compactTime: bool(compactTimeKey, default: `default`.compactTime),
+            compactDate: bool(compactDateKey, default: `default`.compactDate)
         )
     }
 }

@@ -38,6 +38,10 @@ final class TimezoneConverterWindowController: NSWindowController, NSWindowDeleg
 
     required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
 
+    deinit {
+        NotificationCenter.default.removeObserver(self)
+    }
+
     private func setupContent() {
         timezoneIdentifiers = TimeZone.knownTimeZoneIdentifiers.sorted()
         timezonePopup.target = self
@@ -70,13 +74,14 @@ final class TimezoneConverterWindowController: NSWindowController, NSWindowDeleg
         }
 
         nowButton.bezelStyle = .rounded
-        nowButton.keyEquivalent = "\r"
         nowButton.target = self
         nowButton.action = #selector(nowClicked)
 
+        // Error label stays in the layout permanently; we toggle its text rather
+        // than its visibility so showing an error never shifts the other rows.
         errorLabel.textColor = .systemRed
         errorLabel.font = .systemFont(ofSize: 11)
-        errorLabel.isHidden = true
+        errorLabel.stringValue = ""
         errorLabel.maximumNumberOfLines = 1
 
         timezoneLabel = NSTextField(labelWithString: "")
@@ -139,15 +144,15 @@ final class TimezoneConverterWindowController: NSWindowController, NSWindowDeleg
         timezoneLabel.stringValue = Strings.t(.converterLabelTimezone, language: lang)
         utcLabel.stringValue = Strings.t(.converterLabelUTC, language: lang)
         targetLabel.stringValue = Strings.t(.converterLabelTarget, language: lang)
-        copyUTCButton.title = Strings.t(.converterCopyButton, language: lang)
-        copyTargetButton.title = Strings.t(.converterCopyButton, language: lang)
+        let copyTitle = Strings.t(.converterCopyButton, language: lang)
+        copyUTCButton.title = copyTitle
+        copyTargetButton.title = copyTitle
+        // Icon-only buttons need an explicit accessibility label for VoiceOver.
+        copyUTCButton.setAccessibilityLabel("\(copyTitle) UTC")
+        copyTargetButton.setAccessibilityLabel("\(copyTitle) \(Strings.t(.converterLabelTarget, language: lang))")
         nowButton.title = Strings.t(.converterNowButton, language: lang)
-
-        let selected = timezonePopup.indexOfSelectedItem
-        populateTimezonePopup()
-        if selected >= 0 && selected < timezonePopup.numberOfItems {
-            timezonePopup.selectItem(at: selected)
-        }
+        // The timezone popup items (identifier + UTC offset) are language-independent,
+        // so there is no need to rebuild all ~450 of them on a language change.
     }
 
     private func populateTimezonePopup() {
@@ -188,7 +193,7 @@ final class TimezoneConverterWindowController: NSWindowController, NSWindowDeleg
         utcField.stringValue = result.utc
         targetField.stringValue = result.target
         isProgrammaticUpdate = false
-        errorLabel.isHidden = true
+        errorLabel.stringValue = ""
     }
 
     @objc private func copyClicked(_ sender: NSButton) {
@@ -211,7 +216,7 @@ final class TimezoneConverterWindowController: NSWindowController, NSWindowDeleg
             isProgrammaticUpdate = true
             targetField.stringValue = ""
             isProgrammaticUpdate = false
-            errorLabel.isHidden = true
+            errorLabel.stringValue = ""
             return
         }
         switch TimezoneConverter.convertUTCToTarget(input, targetTimezoneId: converterStore.current.targetTimezone) {
@@ -219,7 +224,7 @@ final class TimezoneConverterWindowController: NSWindowController, NSWindowDeleg
             isProgrammaticUpdate = true
             targetField.stringValue = converted
             isProgrammaticUpdate = false
-            errorLabel.isHidden = true
+            errorLabel.stringValue = ""
         case .failure(let err):
             showError(err)
         }
@@ -231,7 +236,7 @@ final class TimezoneConverterWindowController: NSWindowController, NSWindowDeleg
             isProgrammaticUpdate = true
             utcField.stringValue = ""
             isProgrammaticUpdate = false
-            errorLabel.isHidden = true
+            errorLabel.stringValue = ""
             return
         }
         switch TimezoneConverter.convertTargetToUTC(input, targetTimezoneId: converterStore.current.targetTimezone) {
@@ -239,7 +244,7 @@ final class TimezoneConverterWindowController: NSWindowController, NSWindowDeleg
             isProgrammaticUpdate = true
             utcField.stringValue = converted
             isProgrammaticUpdate = false
-            errorLabel.isHidden = true
+            errorLabel.stringValue = ""
         case .failure(let err):
             showError(err)
         }
@@ -259,6 +264,6 @@ final class TimezoneConverterWindowController: NSWindowController, NSWindowDeleg
         case .yearOutOfRange: errorLabel.stringValue = Strings.t(.converterErrorYearOutOfRange, language: lang)
         case .unknownTimezone: errorLabel.stringValue = Strings.t(.converterErrorUnknownTimezone, language: lang)
         }
-        errorLabel.isHidden = false
+        
     }
 }

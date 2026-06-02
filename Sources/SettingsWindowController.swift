@@ -16,6 +16,7 @@ final class SettingsWindowController: NSWindowController, NSWindowDelegate {
         let vm = SettingsViewModel2(
             styleStore: styleStore,
             languageStore: languageStore,
+            loginItem: SMAppServiceLoginItem(),
             displayOptions: displayOptions,
             onDisplayOptionsChanged: onDisplayOptionsChanged
         )

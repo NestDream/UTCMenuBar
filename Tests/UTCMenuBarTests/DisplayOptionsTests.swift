@@ -23,7 +23,8 @@ enum DisplayOptionsTests {
         print("  ✓ testDefaultValues passed")
     }
 
-    /// Verify that loading from a fresh/empty UserDefaults suite returns default values (all false).
+    /// Verify that loading from a fresh/empty UserDefaults suite returns the
+    /// intended first-launch defaults (.default == all true), not all-false.
     static func testLoadFromEmptyDefaults() {
         print("  Running: testLoadFromEmptyDefaults...")
         let suiteName = "com.utcmenubar.test.empty.\(ProcessInfo.processInfo.globallyUniqueString)"
@@ -36,16 +37,52 @@ enum DisplayOptionsTests {
 
         let loaded = DisplayOptions.load(from: emptyDefaults)
 
-        guard loaded.showDate == false else {
-            fatalError("FAIL: Loading from empty UserDefaults should have showDate=false, got \(loaded.showDate)")
-        }
-        guard loaded.compactTime == false else {
-            fatalError("FAIL: Loading from empty UserDefaults should have compactTime=false, got \(loaded.compactTime)")
-        }
-        guard loaded.compactDate == false else {
-            fatalError("FAIL: Loading from empty UserDefaults should have compactDate=false, got \(loaded.compactDate)")
+        guard loaded == .default else {
+            fatalError("FAIL: Loading from empty UserDefaults should equal .default, got \(loaded)")
         }
         print("  ✓ testLoadFromEmptyDefaults passed")
+    }
+
+    /// Verify that an explicitly-saved all-false state round-trips correctly
+    /// (i.e. a user who turns everything off is respected, not overridden by .default).
+    static func testLoadRespectsExplicitFalse() {
+        print("  Running: testLoadRespectsExplicitFalse...")
+        let suiteName = "com.utcmenubar.test.explicitfalse.\(ProcessInfo.processInfo.globallyUniqueString)"
+        guard let defaults = UserDefaults(suiteName: suiteName) else {
+            fatalError("FAIL: Could not create UserDefaults suite: \(suiteName)")
+        }
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+
+        DisplayOptions(showDate: false, compactTime: false, compactDate: false).save(to: defaults)
+        let loaded = DisplayOptions.load(from: defaults)
+
+        guard loaded == DisplayOptions(showDate: false, compactTime: false, compactDate: false) else {
+            fatalError("FAIL: explicit all-false should round-trip, got \(loaded)")
+        }
+        print("  ✓ testLoadRespectsExplicitFalse passed")
+    }
+
+    /// Verify a partial save (only showDate written) keeps the explicit value and
+    /// fills missing keys from .default.
+    static func testLoadPartialKeysFillFromDefault() {
+        print("  Running: testLoadPartialKeysFillFromDefault...")
+        let suiteName = "com.utcmenubar.test.partial.\(ProcessInfo.processInfo.globallyUniqueString)"
+        guard let defaults = UserDefaults(suiteName: suiteName) else {
+            fatalError("FAIL: Could not create UserDefaults suite: \(suiteName)")
+        }
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+
+        defaults.set(false, forKey: DisplayOptions.showDateKey)
+        let loaded = DisplayOptions.load(from: defaults)
+
+        guard loaded.showDate == false else {
+            fatalError("FAIL: explicit showDate=false should be respected, got \(loaded.showDate)")
+        }
+        guard loaded.compactTime == DisplayOptions.default.compactTime,
+              loaded.compactDate == DisplayOptions.default.compactDate else {
+            fatalError("FAIL: missing keys should fall back to .default, got \(loaded)")
+        }
+        print("  ✓ testLoadPartialKeysFillFromDefault passed")
     }
 
     static func runAll() {
@@ -53,6 +90,8 @@ enum DisplayOptionsTests {
         print("=========================")
         testDefaultValues()
         testLoadFromEmptyDefaults()
+        testLoadRespectsExplicitFalse()
+        testLoadPartialKeysFillFromDefault()
         print("\nAll unit tests passed ✓")
     }
 }
