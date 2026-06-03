@@ -86,19 +86,52 @@ no telemetry, ~5 MB binary.
 
 ## Install
 
-### Build from source (currently the only option)
+Requirements: macOS 13+, Apple Silicon. (Intel Macs: build from source — see below.)
 
-Requirements: macOS 13+, Xcode 15+ (Swift 6 toolchain).
+### Option A — Download a release (recommended)
+
+1. Grab the latest `UTCMenuBar-vX.Y.Z-arm64.zip` from
+   [**Releases**](https://github.com/NestDream/UTCMenuBar/releases).
+2. Unzip it and move `UTCMenuBar.app` to `/Applications`.
+3. **First launch — important:** the build is **not signed or notarized**
+   (this is a free hobby project without a paid Apple Developer account), so
+   macOS Gatekeeper will block a plain double-click with a message like
+   *“UTCMenuBar can’t be opened because Apple cannot check it for malicious
+   software.”* This is expected. To open it the first time:
+
+   - **Right-click** (or Control-click) `UTCMenuBar.app` → **Open** → click
+     **Open** in the dialog. macOS remembers your choice, so every launch after
+     that is a normal double-click.
+   - If you don’t see an **Open** button, go to **System Settings → Privacy &
+     Security**, scroll to the message about UTCMenuBar, and click **Open
+     Anyway**.
+
+   > Prefer not to bypass Gatekeeper? Build from source instead (Option B) —
+   > a build you compiled yourself runs without any prompt.
+
+4. (Optional) Verify the download against the SHA-256 printed in the release
+   notes:
+
+   ```bash
+   shasum -a 256 UTCMenuBar-vX.Y.Z-arm64.zip
+   ```
+
+To start it automatically at login: open **Settings (`⌘,`)** and toggle
+**Launch at login** — the app registers itself via `SMAppService`, no manual
+drag into System Settings required.
+
+### Option B — Build from source
+
+No Gatekeeper prompt, and works on Intel too. Requirements: macOS 13+, the
+Swift 6 toolchain (Xcode 15+).
 
 ```bash
-git clone <this repo>
-cd UTCClock
-./scripts/build-app.sh         # produces UTCMenuBar.app in repo root
-open UTCMenuBar.app
+git clone https://github.com/NestDream/UTCMenuBar.git
+cd UTCMenuBar
+./scripts/build-app.sh          # produces UTCMenuBar.app in the repo root
+cp -R UTCMenuBar.app /Applications/
+open /Applications/UTCMenuBar.app
 ```
-
-To launch on every login: open **Settings (`⌘,`)** and toggle **Launch at
-login** — the app registers itself via `SMAppService`, no manual drag needed.
 
 ### Run as an SPM executable (for development)
 
@@ -106,7 +139,7 @@ login** — the app registers itself via `SMAppService`, no manual drag needed.
 swift run UTCMenuBar
 ```
 
-This works but the menu bar icon only stays visible while the process is
+This works, but the menu bar icon only stays visible while the process is
 running — it is not daemonized. Use the `.app` bundle for daily driving.
 
 ---
@@ -289,7 +322,7 @@ companion), **iStat Menus** (commercial system suite). Cells: ✓ = supported,
 | iCloud sync | ✗ | ✗ | ✗ | ✓ | ✗ | ? |
 | Multi-display awareness | ✗ <sup>5</sup> | ✗ <sup>5</sup> | ✗ <sup>5</sup> | ✗ <sup>5</sup> | ✗ <sup>5</sup> | ✗ <sup>5</sup> |
 | Localization (UI) | ✓ (English + 中文) | ✗ (English) | ✗ (English) | ✓ (Crowdin community) | ✗ (English) | ✓ |
-| Distribution (.app available) | source-build only | unsigned binary on GitHub | source build free / signed $5 | Homebrew cask + GitHub release | Homebrew cask + there.pm | direct buy + Setapp |
+| Distribution (.app available) | unsigned binary on GitHub + source | unsigned binary on GitHub | source build free / signed $5 | Homebrew cask + GitHub release | Homebrew cask + there.pm | direct buy + Setapp |
 
 <sup>1</sup> iStat Menus' single-license price is no longer published on the
 vendor's public page (shows as `$?` placeholder); historically it has been
@@ -373,8 +406,10 @@ Things competitors do better, today:
 - **No 24h/12h toggle.** Currently 24h-only. (Planned.)
 - **No calendar / meeting integration.** Clocker is the gold standard here;
   this app explicitly does not try to compete.
-- **No Mac App Store build, no signed/notarized release artifacts yet.**
-  Build from source for now.
+- **No Mac App Store build, and release binaries are unsigned / not notarized.**
+  Prebuilt `.app` zips are on GitHub Releases, but because they aren't signed
+  you need a one-time right-click → Open (see [Install](#install)), or build
+  from source to avoid the prompt.
 - **Just reached 1.0** — young project, modest star count, not yet
   battle-tested. Bug reports welcome.
 
