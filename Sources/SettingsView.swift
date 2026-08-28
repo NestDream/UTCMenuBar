@@ -4,12 +4,14 @@ import UTCMenuBarLib
 struct SettingsView: View {
     @ObservedObject var viewModel: SettingsViewModel2
     let onPickCustomFont: () -> Void
+    let onCheckForUpdates: () -> Void
 
     var body: some View {
         VStack(spacing: 0) {
             Form {
                 Section(viewModel.label(.settingsSectionGeneral)) {
                     Toggle(viewModel.label(.settingsLaunchAtLogin), isOn: $viewModel.launchAtLogin)
+                    Toggle(viewModel.label(.updateAutoCheck), isOn: $viewModel.autoCheckUpdates)
                     if viewModel.launchAtLoginRequiresApproval {
                         HStack(spacing: 8) {
                             Image(systemName: "exclamationmark.triangle.fill")
@@ -124,6 +126,9 @@ struct SettingsView: View {
                         Text("\(BundleInfo.shortVersion) (\(BundleInfo.buildNumber))")
                             .foregroundStyle(.secondary)
                             .textSelection(.enabled)
+                    }
+                    Button(viewModel.label(.menuCheckForUpdates)) {
+                        onCheckForUpdates()
                     }
                     Link(viewModel.label(.aboutViewReleases), destination: BundleInfo.releasesURL)
                 }

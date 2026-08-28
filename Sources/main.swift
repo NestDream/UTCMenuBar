@@ -19,6 +19,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     /// refreshes like a language change that doesn't alter the styled text.
     private var lastRendered: (text: String, style: StyleOptions, language: AppLanguage)?
     private var observerTokens: [(NotificationCenter, NSObjectProtocol)] = []
+    private var updateController: UpdateController?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
@@ -56,6 +57,17 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
         updateTime()
         rebuildTimer()
+
+        updateController = UpdateController(languageStore: languageStore)
+        // Silent daily update check, a few seconds after launch so it never
+        // competes with startup.
+        Task { [weak self] in
+            try? await Task.sleep(for: .seconds(5))
+            guard let self else { return }
+            if UpdateChecker.shouldAutoCheck(now: Date(), preferences: UpdatePreferences.load()) {
+                self.updateController?.checkForUpdates(userInitiated: false)
+            }
+        }
 
         // Block-based observers pinned to the main queue: selector-based
         // delivery happens on the posting thread, and .NSSystemClockDidChange
@@ -135,6 +147,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             setLanguage: #selector(setLanguage(_:)),
             showSettings: #selector(showSettings),
             showTimezoneConverter: #selector(showTimezoneConverter),
+            checkForUpdates: #selector(checkForUpdates),
             quit: #selector(quit)
         )
     }
@@ -246,6 +259,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                 languageStore: languageStore,
                 displayOptions: displayOptions,
                 onPickCustomFont: { [weak self] in self?.presentFontPanel() },
+                onCheckForUpdates: { [weak self] in self?.updateController?.checkForUpdates(userInitiated: true) },
                 onDisplayOptionsChanged: { [weak self] opts in
                     self?.displayOptions = opts
                     self?.updateTime()
@@ -258,6 +272,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         }
         NSApp.activate(ignoringOtherApps: true)
         settingsWindowController!.showWindow(nil)
+    }
+
+    @objc private func checkForUpdates() {
+        updateController?.checkForUpdates(userInitiated: true)
     }
 
     @objc private func showTimezoneConverter() {

@@ -33,6 +33,8 @@ struct TestRunner {
         print("")
         StatusItemClickTests.runAll()
         print("")
+        UpdateCheckerTests.runAll()
+        print("")
         TimeZoneUTCTests.runAll()
         print("")
         PopoverLayoutTests.runAll()

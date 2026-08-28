@@ -70,6 +70,15 @@ public final class SettingsViewModel2: ObservableObject {
     @Published public var launchAtLoginRequiresApproval: Bool = false
     @Published public var launchAtLoginError: String?
 
+    @Published public var autoCheckUpdates: Bool {
+        didSet {
+            guard !isSyncing else { return }
+            var prefs = UpdatePreferences.load(from: displayDefaults)
+            prefs.autoCheck = autoCheckUpdates
+            prefs.save(to: displayDefaults)
+        }
+    }
+
     public init(
         styleStore: StyleOptionsStore,
         languageStore: LanguageStore,
@@ -102,6 +111,7 @@ public final class SettingsViewModel2: ObservableObject {
 
         self.launchAtLogin = loginItem.isEnabled
         self.launchAtLoginRequiresApproval = loginItem.requiresApproval
+        self.autoCheckUpdates = UpdatePreferences.load(from: displayDefaults).autoCheck
 
         updatePreview()
 
