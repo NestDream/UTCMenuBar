@@ -37,6 +37,16 @@ public enum TimerScheduling {
         }
     }
 
+    /// Timer tolerance for a repeating tick. A non-zero tolerance lets the
+    /// system coalesce wakeups with other work (saving energy for a process
+    /// that otherwise wakes every second, forever). Tolerance only delays a
+    /// fire, never advances it, so the cap keeps the displayed value from
+    /// ever being visibly stale: 10% of the interval, at most 1.5s.
+    public static func tolerance(for interval: TimeInterval) -> TimeInterval {
+        guard interval > 0 else { return 0 }
+        return min(interval * 0.1, 1.5)
+    }
+
     public static let utcCalendar: Calendar = {
         var c = Calendar(identifier: .gregorian)
         c.timeZone = .utc

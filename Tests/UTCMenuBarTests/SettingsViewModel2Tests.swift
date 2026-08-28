@@ -152,6 +152,30 @@ enum SettingsViewModel2Tests {
         print("  ✓ testLaunchAtLoginErrorRollsBack passed")
     }
 
+    /// The preview must mirror the menu bar exactly: decorator wrapping and the
+    /// selected icon prefix both appear in previewText.
+    static func testPreviewMirrorsDecoratorAndIcon() {
+        print("  Running: testPreviewMirrorsDecoratorAndIcon...")
+        MainActor.assumeIsolated {
+            let (defaults, name) = suite()
+            defer { defaults.removePersistentDomain(forName: name) }
+            let (vm, _, _) = makeVM(defaults)
+
+            vm.decorator = .brackets
+            vm.iconPrefix = .globe
+            guard vm.previewText.hasPrefix("[🌐 "), vm.previewText.hasSuffix("]") else {
+                fatalError("FAIL: preview should be bracket-wrapped with globe prefix, got '\(vm.previewText)'")
+            }
+
+            vm.decorator = .none
+            vm.iconPrefix = .none
+            guard !vm.previewText.hasPrefix("["), !vm.previewText.contains("🌐") else {
+                fatalError("FAIL: preview should drop decorator and icon, got '\(vm.previewText)'")
+            }
+        }
+        print("  ✓ testPreviewMirrorsDecoratorAndIcon passed")
+    }
+
     static func runAll() {
         print("SettingsViewModel2 Unit Tests")
         print("=============================")
@@ -161,6 +185,7 @@ enum SettingsViewModel2Tests {
         testCompactDateGatedByShowDate()
         testLaunchAtLoginSuccess()
         testLaunchAtLoginErrorRollsBack()
+        testPreviewMirrorsDecoratorAndIcon()
         print("\nAll SettingsViewModel2 unit tests passed ✓")
     }
 }

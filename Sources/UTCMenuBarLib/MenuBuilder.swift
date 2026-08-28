@@ -23,6 +23,11 @@ public enum MenuBuilder {
         quit: Selector?
     ) -> NSMenu {
         let menu = NSMenu()
+        // Manual enablement: with the default autoenablesItems=true, AppKit would
+        // re-enable every item whose target responds to its action when the menu
+        // is displayed, silently overriding the explicit isEnabled assignments
+        // below (e.g. "Compact date" must stay disabled while "Show date" is off).
+        menu.autoenablesItems = false
 
         let showDateItem = NSMenuItem(
             title: Strings.t(.menuShowDate, language: language),
@@ -110,6 +115,7 @@ public enum MenuBuilder {
         setLanguage: Selector?
     ) -> NSMenu {
         let menu = NSMenu(title: Strings.t(.menuAppearance, language: language))
+        menu.autoenablesItems = false
 
         let fontItem = NSMenuItem(
             title: Strings.t(.appearanceFont, language: language),
@@ -221,6 +227,7 @@ public enum MenuBuilder {
         target: AnyObject?
     ) -> NSMenu {
         let submenu = NSMenu()
+        submenu.autoenablesItems = false
         for (index, value) in allCases.enumerated() {
             let item = NSMenuItem(title: displayName(value), action: action, keyEquivalent: "")
             item.target = target

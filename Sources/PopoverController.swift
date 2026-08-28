@@ -2,6 +2,13 @@ import AppKit
 import SwiftUI
 import UTCMenuBarLib
 
+/// Borderless panels refuse key status by default; the popover opts in so it
+/// can receive Esc without activating the app (the standard non-activating
+/// panel pattern — keyboard focus returns to the previous app on close).
+private final class PopoverPanel: NSPanel {
+    override var canBecomeKey: Bool { true }
+}
+
 @MainActor
 final class PopoverController {
     private var panel: NSPanel?
@@ -9,6 +16,7 @@ final class PopoverController {
     private let viewModel: ClockPopoverViewModel
     private var hostingView: NSHostingView<ClockPopoverView>?
     private var eventMonitor: Any?
+    private var localEventMonitor: Any?
     private var isClosing = false
 
     var isShown: Bool { (panel?.isVisible ?? false) && !isClosing }
@@ -47,7 +55,7 @@ final class PopoverController {
         let hosting = NSHostingView(rootView: contentView)
         self.hostingView = hosting
 
-        let panel = NSPanel(
+        let panel = PopoverPanel(
             contentRect: .zero,
             styleMask: [.nonactivatingPanel, .fullSizeContentView],
             backing: .buffered,
@@ -89,6 +97,8 @@ final class PopoverController {
         panel.setFrameOrigin(origin)
         panel.alphaValue = 0
         panel.orderFrontRegardless()
+        // Take key without activating the app so Esc can dismiss the popover.
+        panel.makeKey()
 
         viewModel.startTicking()
 
@@ -119,6 +129,7 @@ final class PopoverController {
     }
 
     private func startEventMonitor() {
+        // Global monitor: clicks delivered to other applications.
         eventMonitor = NSEvent.addGlobalMonitorForEvents(matching: [.leftMouseDown, .rightMouseDown]) { [weak self] _ in
             guard let self else { return }
             // Ignore clicks on the status item itself — those are handled by
@@ -132,12 +143,36 @@ final class PopoverController {
             }
             self.close()
         }
+        // Local monitor: events delivered to this app — clicks on our own
+        // windows (Settings, converter) should also dismiss, and Esc closes
+        // the popover while it is key.
+        localEventMonitor = NSEvent.addLocalMonitorForEvents(matching: [.leftMouseDown, .rightMouseDown, .keyDown]) { [weak self] event in
+            guard let self else { return event }
+            if event.type == .keyDown {
+                let escKeyCode: UInt16 = 53
+                if event.keyCode == escKeyCode, event.window === self.panel {
+                    self.close()
+                    return nil  // swallow the Esc that closed the popover
+                }
+                return event
+            }
+            // Clicks inside the popover itself, or on the status item (whose
+            // action already toggles), must not dismiss.
+            if event.window === self.panel { return event }
+            if let button = self.statusItem.button, event.window === button.window { return event }
+            self.close()
+            return event
+        }
     }
 
     private func stopEventMonitor() {
         if let monitor = eventMonitor {
             NSEvent.removeMonitor(monitor)
             eventMonitor = nil
+        }
+        if let monitor = localEventMonitor {
+            NSEvent.removeMonitor(monitor)
+            localEventMonitor = nil
         }
     }
 }

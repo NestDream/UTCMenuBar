@@ -611,8 +611,9 @@ public static func resolveFont(
 
     switch family {
     case .system:
-        // 使用系统字体，支持字重
-        return NSFont.systemFont(ofSize: pointSize, weight: weight.nsWeight)
+        // 系统字体的等宽数字变体：字母保持比例宽度，数字为表格宽度，
+        // 避免时钟每秒变宽/变窄导致菜单栏相邻图标抖动
+        return NSFont.monospacedDigitSystemFont(ofSize: pointSize, weight: weight.nsWeight)
 
     case .menlo:
         // Menlo 字体，通过 font descriptor 应用字重
@@ -751,7 +752,7 @@ public static func resolveFont(family: FontFamily, weight: FontWeight, size: Fon
 **后置条件：**
 - 返回值非 nil（通过回退机制保证）
 - `result.pointSize == size.pointSize`
-- 当 `family == .system` 时，使用 `NSFont.systemFont`
+- 当 `family == .system` 时，使用 `NSFont.monospacedDigitSystemFont`（系统字体的等宽数字变体）
 - 当 `family == .sfMono` 时，使用 `NSFont.monospacedSystemFont`
 - 当 `family == .menlo` 时，尝试 Menlo 字体，失败则回退到等宽系统字体
 
@@ -1063,12 +1064,12 @@ public static func resolveFont(
         if !trimmed.isEmpty, let f = NSFont(name: trimmed, size: pt) {
             return applyWeight(to: f, weight: weight)
         }
-        return NSFont.systemFont(ofSize: pt, weight: weight.nsWeight)
+        return NSFont.monospacedDigitSystemFont(ofSize: pt, weight: weight.nsWeight)
     }
 }
 ```
 
-`buildAttributedString` 内部把 `style.customFontName` 转发给 `resolveFont`。回退路径与 `.menlo` 类似，但回退到普通 system font 而非等宽 system font，因为自定义意图通常不是等宽。
+`buildAttributedString` 内部把 `style.customFontName` 转发给 `resolveFont`。回退路径与 `.menlo` 类似，但回退到等宽数字系统字体而非全等宽 system font：字母保持比例宽度（自定义意图通常不是等宽），数字用表格宽度保证菜单栏宽度稳定。
 
 ### 字体面板交互
 

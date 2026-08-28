@@ -264,6 +264,27 @@ enum MenuTests {
         print("  ✓ testTimezoneConverterItemKeyEquivalent passed")
     }
 
+    /// With NSMenu's default autoenablesItems=true, AppKit re-enables every item
+    /// whose target responds to its action at display time, silently overriding
+    /// explicit isEnabled assignments (the "Compact date" item must stay disabled
+    /// while "Show date" is off). Every menu MenuBuilder produces must therefore
+    /// opt out of autoenabling, recursively.
+    static func testMenusDisableAutoenabling() {
+        print("  Running: testMenusDisableAutoenabling...")
+        func assertNoAutoenable(_ menu: NSMenu, path: String) {
+            guard !menu.autoenablesItems else {
+                fatalError("FAIL: menu at \(path) has autoenablesItems=true; display-time validation would override explicit isEnabled values")
+            }
+            for item in menu.items {
+                if let submenu = item.submenu {
+                    assertNoAutoenable(submenu, path: "\(path) > \(item.title)")
+                }
+            }
+        }
+        assertNoAutoenable(buildDefault(), path: "root")
+        print("  ✓ testMenusDisableAutoenabling passed")
+    }
+
     static func testLanguageSubmenuStructure() {
         print("  Running: testLanguageSubmenuStructure...")
         let submenu = appearanceSubmenu(at: 6, style: .default, language: .zh)
@@ -297,6 +318,7 @@ enum MenuTests {
         testRadioForIconPrefix()
         testRadioForDecorator()
         testFontSubmenuIncludesCustom()
+        testMenusDisableAutoenabling()
         testLanguageSubmenuStructure()
         print("\nAll menu unit tests passed ✓")
     }

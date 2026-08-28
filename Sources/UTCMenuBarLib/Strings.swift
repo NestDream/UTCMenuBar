@@ -56,6 +56,9 @@ public enum StringKey: String, CaseIterable, Sendable {
     case decoratorParentheses
     case decoratorBars
 
+    // Status item (tooltip + VoiceOver label prefix)
+    case statusItemToolTip
+
     // Settings window
     case settingsWindowTitle
     case settingsLabelFont
@@ -165,6 +168,8 @@ public enum Strings {
         .decoratorParentheses: "(Parentheses)",
         .decoratorBars: "│Bars│",
 
+        .statusItemToolTip: "UTC Time",
+
         .settingsWindowTitle: "UTCMenuBar Settings",
         .settingsLabelFont: "Font",
         .settingsLabelWeight: "Weight",
@@ -248,6 +253,8 @@ public enum Strings {
         .decoratorBrackets: "[方括号]",
         .decoratorParentheses: "(圆括号)",
         .decoratorBars: "│竖线│",
+
+        .statusItemToolTip: "UTC 时间",
 
         .settingsWindowTitle: "UTCMenuBar 设置",
         .settingsLabelFont: "字体",

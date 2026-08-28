@@ -41,11 +41,21 @@ public final class ClockPopoverViewModel: ObservableObject {
     /// Begins ticking. Called when the popover becomes visible. The interval
     /// matches the menu-bar cadence (1s, or 60s in compact mode) so the popover
     /// and status item stay consistent and the timer doesn't run while hidden.
+    /// A single repeating timer whose first fire lands on the next boundary —
+    /// repeating fire dates are computed from the original fire date, so the
+    /// per-fire tolerance never accumulates drift.
     public func startTicking() {
         updateTime()
+        timer?.invalidate()
         let interval = TimerScheduling.interval(compactTime: displayOptionsProvider().compactTime)
         let delay = TimerScheduling.delayToNextBoundary(after: Date(), interval: interval)
-        scheduleAligned(delay: delay, interval: interval)
+        let tick = Timer(fire: Date().addingTimeInterval(delay), interval: interval, repeats: true) { [weak self] _ in
+            // Timers added to the main run loop fire on the main thread.
+            MainActor.assumeIsolated { self?.updateTime() }
+        }
+        tick.tolerance = TimerScheduling.tolerance(for: interval)
+        timer = tick
+        RunLoop.main.add(tick, forMode: .common)
     }
 
     public func stopTicking() {
@@ -56,28 +66,6 @@ public final class ClockPopoverViewModel: ObservableObject {
     /// Recomputes `currentTime` immediately from the current options. Exposed for testing.
     public func refresh() {
         updateTime()
-    }
-
-    private func scheduleAligned(delay: TimeInterval, interval: TimeInterval) {
-        timer?.invalidate()
-        let aligned = Timer(timeInterval: delay, repeats: false) { [weak self] _ in
-            Task { @MainActor in
-                guard let self else { return }
-                self.updateTime()
-                self.scheduleRepeating(interval: interval)
-            }
-        }
-        timer = aligned
-        RunLoop.current.add(aligned, forMode: .common)
-    }
-
-    private func scheduleRepeating(interval: TimeInterval) {
-        timer?.invalidate()
-        let repeating = Timer(timeInterval: interval, repeats: true) { [weak self] _ in
-            Task { @MainActor in self?.updateTime() }
-        }
-        timer = repeating
-        RunLoop.current.add(repeating, forMode: .common)
     }
 
     private func updateTime() {

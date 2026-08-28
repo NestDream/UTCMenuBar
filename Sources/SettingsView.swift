@@ -104,8 +104,16 @@ struct SettingsView: View {
                 Section(viewModel.label(.settingsLabelPreview)) {
                     HStack {
                         Spacer()
+                        // Render with the actual resolved font and color so the
+                        // preview shows exactly what the menu bar will show.
                         Text(viewModel.previewText)
-                            .font(.system(size: 18, design: .monospaced))
+                            .font(Font(StyledTextBuilder.resolveFont(
+                                family: viewModel.fontFamily,
+                                weight: viewModel.fontWeight,
+                                size: viewModel.fontSize,
+                                customFontName: viewModel.customFontName
+                            ) as CTFont))
+                            .foregroundStyle(previewColor)
                             .padding(.vertical, 8)
                         Spacer()
                     }
@@ -123,5 +131,10 @@ struct SettingsView: View {
             .formStyle(.grouped)
         }
         .frame(width: 380, height: 540)
+    }
+
+    private var previewColor: Color {
+        if let ns = viewModel.textColor.nsColor { return Color(nsColor: ns) }
+        return .primary
     }
 }

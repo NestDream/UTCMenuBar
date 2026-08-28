@@ -75,6 +75,33 @@ enum TimerSchedulingTests {
         print("  ✓ testDelayBoundedByInterval passed")
     }
 
+    static func testTolerance() {
+        print("  Running: testTolerance...")
+        // 10% of the interval…
+        guard abs(TimerScheduling.tolerance(for: 1.0) - 0.1) < 0.0001 else {
+            fatalError("FAIL: tolerance(1s) should be 0.1, got \(TimerScheduling.tolerance(for: 1.0))")
+        }
+        // …capped at 1.5s so a minute tick is never visibly stale.
+        guard abs(TimerScheduling.tolerance(for: 60.0) - 1.5) < 0.0001 else {
+            fatalError("FAIL: tolerance(60s) should cap at 1.5, got \(TimerScheduling.tolerance(for: 60.0))")
+        }
+        // Degenerate intervals never produce a negative or positive tolerance.
+        guard TimerScheduling.tolerance(for: 0) == 0 else {
+            fatalError("FAIL: tolerance(0) should be 0")
+        }
+        guard TimerScheduling.tolerance(for: -5) == 0 else {
+            fatalError("FAIL: tolerance(-5) should be 0")
+        }
+        // Tolerance never exceeds the interval itself (a fire must not be able
+        // to slip past the next boundary).
+        for interval in [0.5, 1.0, 5.0, 30.0, 60.0] {
+            guard TimerScheduling.tolerance(for: interval) < interval else {
+                fatalError("FAIL: tolerance(\(interval)) >= interval")
+            }
+        }
+        print("  ✓ testTolerance passed")
+    }
+
     static func runAll() {
         print("TimerScheduling Unit Tests")
         print("==========================")
@@ -83,6 +110,7 @@ enum TimerSchedulingTests {
         testDelayAtExactMinuteBoundaryIsFullInterval()
         testDelayToNextSecond()
         testDelayBoundedByInterval()
+        testTolerance()
         print("\nAll TimerScheduling unit tests passed ✓")
     }
 }

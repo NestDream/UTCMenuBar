@@ -164,6 +164,16 @@ final class TimezoneConverterWindowController: NSWindowController, NSWindowDeleg
         }
     }
 
+    /// The window is created once and reused, so offsets computed at creation
+    /// go stale across DST transitions. Refresh titles in place (keeps the
+    /// selection) whenever the window regains key.
+    func windowDidBecomeKey(_ notification: Notification) {
+        let now = Date()
+        for (i, id) in timezoneIdentifiers.enumerated() {
+            timezonePopup.item(at: i)?.title = "\(id) (\(Self.offsetString(for: id, at: now)))"
+        }
+    }
+
     private func selectCurrentTimezone() {
         let target = converterStore.current.targetTimezone
         if let idx = timezoneIdentifiers.firstIndex(of: target) {
