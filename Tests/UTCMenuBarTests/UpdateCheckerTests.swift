@@ -86,6 +86,11 @@ enum UpdateCheckerTests {
         guard UpdateChecker.parseLatestRelease(json: releaseJSON(assetNames: ["source.tar.gz"])) == nil else {
             fatalError("FAIL: release without a zip asset must not parse")
         }
+        // Only the app asset counts; a stray zip must not be offered (it
+        // would fail bundle validation and surface as an error).
+        guard UpdateChecker.parseLatestRelease(json: releaseJSON(assetNames: ["symbols.zip"])) == nil else {
+            fatalError("FAIL: a non-app zip must not parse as the update asset")
+        }
         guard UpdateChecker.parseLatestRelease(json: Data("not json".utf8)) == nil else {
             fatalError("FAIL: garbage input must not parse")
         }

@@ -44,7 +44,7 @@ public struct UpdatePreferences: Equatable, Sendable {
 1. Decodable 解析 GitHub Release JSON（`tag_name`、`html_url`、`draft`、`prerelease`、`assets[].name/browser_download_url`）
 2. `draft || prerelease` → nil
 3. `AppVersion.parse(tag_name)` 失败 → nil
-4. 资产选择：优先名称前缀 `UTCMenuBar-` 且后缀 `.zip`；否则任一 `.zip`；无 → nil
+4. 资产选择：仅接受名称前缀 `UTCMenuBar-` 且后缀 `.zip` 的资产；没有 → nil（不回退到其它 zip：拿 symbols 之类的包去装会在校验阶段变成用户可见的"更新失败"，而不是应有的静默无操作）
 
 ### UpdateChecker.availableUpdate(currentVersion:latest:skippedTag:) -> UpdateInfo?
 

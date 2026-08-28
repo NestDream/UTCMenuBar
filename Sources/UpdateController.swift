@@ -23,8 +23,21 @@ final class UpdateController {
 
     private let languageStore: LanguageStore
     private let defaults: UserDefaults
+    /// Guards the entire check → prompt → download → install lifecycle, so a
+    /// manual check can't stack a second prompt (or a second replace) on top
+    /// of the launch auto-check.
     private var isBusy = false
+    private var downloadTask: Task<Void, Never>?
     private var progressPanel: NSPanel?
+
+    /// Explicit timeouts so a stalled connection can't pin the progress panel
+    /// forever: 30s per request idle, 5 minutes for the whole download.
+    private let session: URLSession = {
+        let config = URLSessionConfiguration.ephemeral
+        config.timeoutIntervalForRequest = 30
+        config.timeoutIntervalForResource = 300
+        return URLSession(configuration: config)
+    }()
 
     init(languageStore: LanguageStore, defaults: UserDefaults = .standard) {
         self.languageStore = languageStore
@@ -35,21 +48,25 @@ final class UpdateController {
 
     func checkForUpdates(userInitiated: Bool) {
         guard !isBusy else { return }
+        isBusy = true
         Task { await performCheck(userInitiated: userInitiated) }
     }
 
     private func performCheck(userInitiated: Bool) async {
-        var prefs = UpdatePreferences.load(from: defaults)
-        prefs.lastCheckAt = Date()
-        prefs.save(to: defaults)
-
         do {
             var request = URLRequest(url: UpdateChecker.latestReleaseAPI)
             request.setValue("application/vnd.github+json", forHTTPHeaderField: "Accept")
-            let (data, response) = try await URLSession.shared.data(for: request)
+            let (data, response) = try await session.data(for: request)
             guard let http = response as? HTTPURLResponse, http.statusCode == 200 else {
                 throw UpdateError.badResponse
             }
+            // Stamp the throttle only after a successful fetch: a failed
+            // launch-time check (Wi-Fi still coming up) must not silence
+            // auto-checks for the next 24h.
+            var prefs = UpdatePreferences.load(from: defaults)
+            prefs.lastCheckAt = Date()
+            prefs.save(to: defaults)
+
             guard let latest = UpdateChecker.parseLatestRelease(json: data) else {
                 throw UpdateError.noUsableRelease
             }
@@ -61,17 +78,26 @@ final class UpdateController {
                 skippedTag: skipped
             ) else {
                 if userInitiated { showUpToDate() }
+                isBusy = false
                 return
             }
-            presentUpdatePrompt(update)
+            if promptShouldInstall(update) {
+                downloadAndInstall(update)  // stays busy until it finishes
+            } else {
+                isBusy = false
+            }
         } catch {
             if userInitiated { showFailure(error) }
+            isBusy = false
         }
     }
 
     // MARK: - Prompts
 
-    private func presentUpdatePrompt(_ update: UpdateInfo) {
+    /// Returns true when the user chose to install now. "Skip this version"
+    /// is persisted only for the non-install choices: skipping and then
+    /// installing must not silence the version if the install later fails.
+    private func promptShouldInstall(_ update: UpdateInfo) -> Bool {
         NSApp.activate(ignoringOtherApps: true)
         let alert = NSAlert()
         alert.messageText = Strings.t(.updateAvailableTitle, language: lang)
@@ -87,19 +113,18 @@ final class UpdateController {
         alert.suppressionButton?.title = Strings.t(.updateSkipVersion, language: lang)
 
         let choice = alert.runModal()
+        if choice == .alertFirstButtonReturn {
+            return true
+        }
         if alert.suppressionButton?.state == .on {
             var prefs = UpdatePreferences.load(from: defaults)
             prefs.skippedTag = update.tagName
             prefs.save(to: defaults)
         }
-        switch choice {
-        case .alertFirstButtonReturn:
-            downloadAndInstall(update)
-        case .alertSecondButtonReturn:
+        if choice == .alertSecondButtonReturn {
             NSWorkspace.shared.open(update.releasePageURL)
-        default:
-            break
         }
+        return false
     }
 
     private func showUpToDate() {
@@ -118,7 +143,9 @@ final class UpdateController {
         if case UpdateError.cannotReplace = error {
             alert.informativeText = Strings.t(.updateCannotReplace, language: lang)
         } else {
-            alert.informativeText = String(describing: error)
+            // Localized explanation plus the raw error as a diagnostic line.
+            alert.informativeText = Strings.t(.updateFailedBody, language: lang)
+                + "\n\n" + String(describing: error)
         }
         alert.addButton(withTitle: Strings.t(.updateViewRelease, language: lang))
         alert.addButton(withTitle: Strings.t(.commonOK, language: lang))
@@ -130,29 +157,46 @@ final class UpdateController {
     // MARK: - Download and install
 
     private func downloadAndInstall(_ update: UpdateInfo) {
-        isBusy = true
         showProgress()
-        Task {
+        downloadTask = Task {
+            let fm = FileManager.default
+            let workDir = fm.temporaryDirectory.appendingPathComponent(
+                "UTCMenuBarUpdate-\(UUID().uuidString)", isDirectory: true)
+            // Runs on every exit. On success the new bundle has already been
+            // moved out of workDir; on failure this reclaims the zip and the
+            // unpacked app instead of stranding megabytes in $TMPDIR.
+            defer { try? fm.removeItem(at: workDir) }
             do {
-                let newApp = try await fetchAndValidate(update)
-                try replaceAndRelaunch(with: newApp)
+                let newApp = try await fetchAndValidate(update, workDir: workDir)
+                let installed = try replaceBundle(with: newApp)
+                hideProgress()
+                relaunch(installed)
+            } catch is CancellationError {
+                hideProgress()
+                isBusy = false
+            } catch let urlError as URLError where urlError.code == .cancelled {
+                hideProgress()
+                isBusy = false
             } catch {
                 hideProgress()
                 isBusy = false
                 showFailure(error)
             }
+            downloadTask = nil
         }
     }
 
-    private func fetchAndValidate(_ update: UpdateInfo) async throws -> URL {
-        let (tmp, response) = try await URLSession.shared.download(from: update.assetURL)
+    private func cancelDownload() {
+        downloadTask?.cancel()
+    }
+
+    private func fetchAndValidate(_ update: UpdateInfo, workDir: URL) async throws -> URL {
+        let (tmp, response) = try await session.download(from: update.assetURL)
         guard let http = response as? HTTPURLResponse, http.statusCode == 200 else {
             throw UpdateError.badResponse
         }
 
         let fm = FileManager.default
-        let workDir = fm.temporaryDirectory.appendingPathComponent(
-            "UTCMenuBarUpdate-\(UUID().uuidString)", isDirectory: true)
         try fm.createDirectory(at: workDir, withIntermediateDirectories: true)
         let zipURL = workDir.appendingPathComponent(update.assetName)
         try fm.moveItem(at: tmp, to: zipURL)
@@ -160,6 +204,7 @@ final class UpdateController {
         let unzipDir = workDir.appendingPathComponent("unzipped", isDirectory: true)
         try fm.createDirectory(at: unzipDir, withIntermediateDirectories: true)
         try await runDitto(zip: zipURL, destination: unzipDir)
+        try Task.checkCancellation()
 
         let apps = try fm.contentsOfDirectory(at: unzipDir, includingPropertiesForKeys: nil)
             .filter { $0.pathExtension == "app" }
@@ -194,7 +239,8 @@ final class UpdateController {
         guard ok else { throw UpdateError.unpackFailed }
     }
 
-    private func replaceAndRelaunch(with newApp: URL) throws {
+    /// Swaps the running bundle for `newApp` and returns the install path.
+    private func replaceBundle(with newApp: URL) throws -> URL {
         let destination = Bundle.main.bundleURL
         let fm = FileManager.default
         // A quarantined app launched from ~/Downloads runs from a read-only
@@ -219,12 +265,15 @@ final class UpdateController {
                 throw UpdateError.replaceFailed(underlying: error)
             }
         }
+        return destination
+    }
 
+    private func relaunch(_ installedApp: URL) {
         // Spawn the new instance, then quit. `-n` forces a fresh instance even
         // though this (old) one is still running for a moment.
         let relaunch = Process()
         relaunch.executableURL = URL(fileURLWithPath: "/usr/bin/open")
-        relaunch.arguments = ["-n", destination.path]
+        relaunch.arguments = ["-n", installedApp.path]
         try? relaunch.run()
         NSApp.terminate(nil)
     }
@@ -233,7 +282,7 @@ final class UpdateController {
 
     private func showProgress() {
         let panel = NSPanel(
-            contentRect: NSRect(x: 0, y: 0, width: 300, height: 64),
+            contentRect: NSRect(x: 0, y: 0, width: 320, height: 70),
             styleMask: [.titled],
             backing: .buffered, defer: false)
         panel.title = "UTCMenuBar"
@@ -244,7 +293,14 @@ final class UpdateController {
         spinner.controlSize = .small
         spinner.startAnimation(nil)
         let label = NSTextField(labelWithString: Strings.t(.updateDownloading, language: lang))
-        let stack = NSStackView(views: [spinner, label])
+        let cancel = NSButton(
+            title: Strings.t(.commonCancel, language: lang),
+            target: self,
+            action: #selector(cancelClicked))
+        cancel.bezelStyle = .rounded
+        cancel.controlSize = .small
+
+        let stack = NSStackView(views: [spinner, label, cancel])
         stack.orientation = .horizontal
         stack.spacing = 10
         stack.edgeInsets = NSEdgeInsets(top: 20, left: 20, bottom: 20, right: 20)
@@ -254,6 +310,10 @@ final class UpdateController {
         NSApp.activate(ignoringOtherApps: true)
         panel.makeKeyAndOrderFront(nil)
         progressPanel = panel
+    }
+
+    @objc private func cancelClicked() {
+        cancelDownload()
     }
 
     private func hideProgress() {

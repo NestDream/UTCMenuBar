@@ -18,7 +18,8 @@ enum BundleInfo {
     static var buildNumber: String {
         Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "—"
     }
-    static let releasesURL = URL(string: "https://github.com/NestDream/UTCMenuBar/releases")!
+    // Derives from the lib's single repo constant so a repo move is one edit.
+    static let releasesURL = UpdateChecker.releasesPageURL
 }
 
 

@@ -54,9 +54,13 @@ public struct UpdateInfo: Equatable, Sendable {
 /// decisions, and auto-check throttling. Networking stays in the app target.
 public enum UpdateChecker {
 
+    /// Single source of truth for the repo location; every other URL
+    /// (including BundleInfo.releasesURL in the app target) derives from it.
+    public static let repoSlug = "NestDream/UTCMenuBar"
+
     /// The fixed HTTPS endpoint for the latest (non-draft, non-prerelease) release.
-    public static let latestReleaseAPI = URL(string: "https://api.github.com/repos/NestDream/UTCMenuBar/releases/latest")!
-    public static let releasesPageURL = URL(string: "https://github.com/NestDream/UTCMenuBar/releases")!
+    public static let latestReleaseAPI = URL(string: "https://api.github.com/repos/\(repoSlug)/releases/latest")!
+    public static let releasesPageURL = URL(string: "https://github.com/\(repoSlug)/releases")!
 
     private struct GitHubRelease: Decodable {
         struct Asset: Decodable {
@@ -72,13 +76,14 @@ public enum UpdateChecker {
 
     /// Parses the GitHub "latest release" JSON into an UpdateInfo.
     /// Returns nil for drafts, prereleases, unparsable tags, or releases
-    /// without a usable zip asset.
+    /// without the app asset. Only `UTCMenuBar-*.zip` counts: offering some
+    /// other zip (symbols, sources) would fail bundle validation later and
+    /// turn a should-be no-op into a user-visible error.
     public static func parseLatestRelease(json: Data) -> UpdateInfo? {
         guard let release = try? JSONDecoder().decode(GitHubRelease.self, from: json) else { return nil }
         guard !release.draft, !release.prerelease else { return nil }
         guard let version = AppVersion.parse(release.tag_name) else { return nil }
-        let zips = release.assets.filter { $0.name.hasSuffix(".zip") }
-        let asset = zips.first { $0.name.hasPrefix("UTCMenuBar-") } ?? zips.first
+        let asset = release.assets.first { $0.name.hasPrefix("UTCMenuBar-") && $0.name.hasSuffix(".zip") }
         guard let asset else { return nil }
         return UpdateInfo(
             version: version,

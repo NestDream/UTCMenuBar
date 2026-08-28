@@ -105,7 +105,7 @@ Requirements: macOS 13+, Apple Silicon. (Intel Macs: build from source — see b
    - Or clear the quarantine flag in Terminal:
 
      ```bash
-     xattr -d com.apple.quarantine /Applications/UTCMenuBar.app
+     xattr -dr com.apple.quarantine /Applications/UTCMenuBar.app
      ```
 
    > Prefer not to bypass Gatekeeper? Build from source instead (Option B) —

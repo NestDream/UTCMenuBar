@@ -89,6 +89,7 @@ public enum StringKey: String, CaseIterable, Sendable {
 
     // Common
     case commonOK
+    case commonCancel
 
     // In-app updates
     case menuCheckForUpdates
@@ -100,6 +101,7 @@ public enum StringKey: String, CaseIterable, Sendable {
     case updateUpToDateTitle
     case updateDownloading
     case updateFailedTitle
+    case updateFailedBody
     case updateAutoCheck
     case updateCannotReplace
 
@@ -226,6 +228,7 @@ public enum Strings {
         .converterErrorUnknownTimezone: "Unknown timezone",
 
         .commonOK: "OK",
+        .commonCancel: "Cancel",
 
         .menuCheckForUpdates: "Check for Updates…",
         .updateAvailableTitle: "Update Available",
@@ -236,6 +239,7 @@ public enum Strings {
         .updateUpToDateTitle: "You're up to date",
         .updateDownloading: "Downloading update…",
         .updateFailedTitle: "Update failed",
+        .updateFailedBody: "The update could not be installed. You can download it manually from the releases page.",
         .updateAutoCheck: "Automatically check for updates",
         .updateCannotReplace: "The app can't replace itself at its current location. Please download the new version manually.",
 
@@ -326,6 +330,7 @@ public enum Strings {
         .converterErrorUnknownTimezone: "未知时区",
 
         .commonOK: "好",
+        .commonCancel: "取消",
 
         .menuCheckForUpdates: "检查更新…",
         .updateAvailableTitle: "发现新版本",
@@ -336,6 +341,7 @@ public enum Strings {
         .updateUpToDateTitle: "已是最新版本",
         .updateDownloading: "正在下载更新…",
         .updateFailedTitle: "更新失败",
+        .updateFailedBody: "更新未能完成安装，可从发行页手动下载。",
         .updateAutoCheck: "自动检查更新",
         .updateCannotReplace: "无法在当前位置自动替换应用，请手动下载新版本。",
 
