@@ -13,10 +13,12 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     private var converterWindowController: TimezoneConverterWindowController?
     private var fontPanelDelegate: FontPanelDelegate?
     private var popoverController: PopoverController?
-    /// What the status item currently renders. Ticks where nothing changed
-    /// (same text, style, and language) skip the attributed-string rebuild and
-    /// the status-item relayout entirely.
+    /// What the status item currently renders. Dedupes redundant re-renders
+    /// when several triggers fire for one state (a settings change reaches
+    /// updateTime via both the store listener and the direct call) and no-op
+    /// refreshes like a language change that doesn't alter the styled text.
     private var lastRendered: (text: String, style: StyleOptions, language: AppLanguage)?
+    private var observerTokens: [(NotificationCenter, NSObjectProtocol)] = []
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
@@ -55,33 +57,31 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         updateTime()
         rebuildTimer()
 
-        NotificationCenter.default.addObserver(
-            self, selector: #selector(systemClockDidChange),
-            name: .NSSystemClockDidChange, object: nil)
-        NSWorkspace.shared.notificationCenter.addObserver(
-            self, selector: #selector(systemClockDidChange),
-            name: NSWorkspace.didWakeNotification, object: nil)
+        // Block-based observers pinned to the main queue: selector-based
+        // delivery happens on the posting thread, and .NSSystemClockDidChange
+        // makes no main-thread promise. An off-main post would trap the
+        // @MainActor isolation assertion in the selector thunk.
+        observerTokens.append((NotificationCenter.default, NotificationCenter.default.addObserver(
+            forName: .NSSystemClockDidChange, object: nil, queue: .main
+        ) { [weak self] _ in
+            MainActor.assumeIsolated { self?.handleClockChange() }
+        }))
+        let workspaceCenter = NSWorkspace.shared.notificationCenter
+        observerTokens.append((workspaceCenter, workspaceCenter.addObserver(
+            forName: NSWorkspace.didWakeNotification, object: nil, queue: .main
+        ) { [weak self] _ in
+            MainActor.assumeIsolated { self?.handleClockChange() }
+        }))
     }
 
     private func rebuildTimer() {
         timer?.invalidate()
-        let interval = TimerScheduling.interval(compactTime: displayOptions.compactTime)
-        // Align the first fire to the next boundary (whole second, or top of the
-        // minute in compact mode) so the displayed value never lags behind reality.
-        // One repeating timer: its fire dates are computed from the original
-        // (boundary-aligned) fire date, so the per-fire tolerance lets the system
-        // coalesce wakeups without accumulating drift.
-        let delay = TimerScheduling.delayToNextBoundary(after: Date(), interval: interval)
-        let tick = Timer(fire: Date().addingTimeInterval(delay), interval: interval, repeats: true) { [weak self] _ in
-            // Timers added to the main run loop fire on the main thread.
-            MainActor.assumeIsolated { self?.updateTime() }
+        timer = TimerScheduling.makeAlignedTimer(compactTime: displayOptions.compactTime) { [weak self] in
+            self?.updateTime()
         }
-        tick.tolerance = TimerScheduling.tolerance(for: interval)
-        timer = tick
-        RunLoop.main.add(tick, forMode: .common)
     }
 
-    @objc private func systemClockDidChange() {
+    private func handleClockChange() {
         updateTime()
         rebuildTimer()
     }
@@ -93,14 +93,19 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationWillTerminate(_ notification: Notification) {
         timer?.invalidate()
         timer = nil
-        NotificationCenter.default.removeObserver(self)
-        NSWorkspace.shared.notificationCenter.removeObserver(self)
+        for (center, token) in observerTokens {
+            center.removeObserver(token)
+        }
+        observerTokens.removeAll()
     }
 
     @objc private func statusItemClicked(_ sender: Any?) {
         guard let event = NSApp.currentEvent else { return }
         if StatusItemClick.isSecondary(eventType: event.type, modifiers: event.modifierFlags) {
-            // Right-click or Control+left-click shows the classic NSMenu
+            // Right-click or Control+left-click shows the classic NSMenu.
+            // Dismiss an open popover first: its monitors deliberately ignore
+            // status-item clicks, so it would otherwise stack behind the menu.
+            popoverController?.close()
             let menu = buildMenu()
             statusItem.menu = menu
             statusItem.button?.performClick(nil)
@@ -150,8 +155,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         lastRendered = (plain, style, language)
         button.attributedTitle = StyledTextBuilder.buildAttributedString(text: plain, style: style)
         // VoiceOver reads the label instead of the emoji-prefixed title, so speak
-        // a localized name plus the icon-free time.
-        let spoken = TimeFormatter.formatDisplay(date: now, options: displayOptions, iconPrefix: .none)
+        // a localized name plus the icon-free time (the plain text minus the
+        // prefix, cheaper than a second formatter pass).
+        let spoken = plain.dropFirst(style.iconPrefix.prefix.count)
         button.setAccessibilityLabel("\(Strings.t(.statusItemToolTip, language: language)) \(spoken)")
     }
 

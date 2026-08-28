@@ -38,24 +38,15 @@ public final class ClockPopoverViewModel: ObservableObject {
     /// Whether the tick timer is currently running. Exposed for testing.
     public var isTicking: Bool { timer != nil }
 
-    /// Begins ticking. Called when the popover becomes visible. The interval
-    /// matches the menu-bar cadence (1s, or 60s in compact mode) so the popover
-    /// and status item stay consistent and the timer doesn't run while hidden.
-    /// A single repeating timer whose first fire lands on the next boundary —
-    /// repeating fire dates are computed from the original fire date, so the
-    /// per-fire tolerance never accumulates drift.
+    /// Begins ticking. Called when the popover becomes visible. Uses the same
+    /// shared timer recipe as the status item (1s, or 60s in compact mode) so
+    /// the two stay consistent, and the timer doesn't run while hidden.
     public func startTicking() {
         updateTime()
         timer?.invalidate()
-        let interval = TimerScheduling.interval(compactTime: displayOptionsProvider().compactTime)
-        let delay = TimerScheduling.delayToNextBoundary(after: Date(), interval: interval)
-        let tick = Timer(fire: Date().addingTimeInterval(delay), interval: interval, repeats: true) { [weak self] _ in
-            // Timers added to the main run loop fire on the main thread.
-            MainActor.assumeIsolated { self?.updateTime() }
+        timer = TimerScheduling.makeAlignedTimer(compactTime: displayOptionsProvider().compactTime) { [weak self] in
+            self?.updateTime()
         }
-        tick.tolerance = TimerScheduling.tolerance(for: interval)
-        timer = tick
-        RunLoop.main.add(tick, forMode: .common)
     }
 
     public func stopTicking() {

@@ -134,7 +134,11 @@ struct SettingsView: View {
     }
 
     private var previewColor: Color {
-        if let ns = viewModel.textColor.nsColor { return Color(nsColor: ns) }
+        // Same resolution path as the menu bar renderer, so the preview color
+        // can't drift from what actually ships.
+        if let ns = StyledTextBuilder.resolveColor(option: viewModel.textColor) {
+            return Color(nsColor: ns)
+        }
         return .primary
     }
 }

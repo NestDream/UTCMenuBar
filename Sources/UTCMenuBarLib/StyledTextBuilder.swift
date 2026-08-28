@@ -17,7 +17,7 @@ public enum StyledTextBuilder {
         if let color = resolveColor(option: style.textColor) {
             attributes[.foregroundColor] = color
         }
-        let decorated = style.decorator.prefix + text + style.decorator.suffix
+        let decorated = style.decorator.apply(to: text)
         return NSAttributedString(string: decorated, attributes: attributes)
     }
 

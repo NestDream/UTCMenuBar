@@ -10,13 +10,21 @@
 
 set -euo pipefail
 
-CONFIG="${1:-release}"
+CONFIG="release"
 # Plain string (not an array): macOS ships bash 3.2, where expanding an empty
 # array under `set -u` errors out.
 ARCH_FLAGS=""
-if [[ "${2:-}" == "--universal" ]]; then
-    ARCH_FLAGS="--arch arm64 --arch x86_64"
-fi
+for arg in "$@"; do
+    case "$arg" in
+        debug|release) CONFIG="$arg" ;;
+        --universal) ARCH_FLAGS="--arch arm64 --arch x86_64" ;;
+        *)
+            echo "error: unknown argument '$arg'" >&2
+            echo "usage: $0 [debug|release] [--universal]" >&2
+            exit 2
+            ;;
+    esac
+done
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 APP="$ROOT/UTCMenuBar.app"
 

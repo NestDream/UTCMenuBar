@@ -102,6 +102,31 @@ enum TimerSchedulingTests {
         print("  ✓ testTolerance passed")
     }
 
+    /// The shared timer factory must produce a repeating timer with the
+    /// mode-appropriate interval and tolerance, first firing within the next
+    /// boundary window.
+    static func testMakeAlignedTimer() {
+        print("  Running: testMakeAlignedTimer...")
+        MainActor.assumeIsolated {
+            for (compact, interval) in [(true, 60.0), (false, 1.0)] {
+                let before = Date()
+                let timer = TimerScheduling.makeAlignedTimer(compactTime: compact) {}
+                defer { timer.invalidate() }
+                guard timer.timeInterval == interval else {
+                    fatalError("FAIL: compact=\(compact) interval \(timer.timeInterval), expected \(interval)")
+                }
+                guard abs(timer.tolerance - TimerScheduling.tolerance(for: interval)) < 0.0001 else {
+                    fatalError("FAIL: compact=\(compact) tolerance \(timer.tolerance)")
+                }
+                let delay = timer.fireDate.timeIntervalSince(before)
+                guard delay > 0 && delay <= interval + 0.5 else {
+                    fatalError("FAIL: compact=\(compact) first fire \(delay)s away, expected within (0, \(interval)]")
+                }
+            }
+        }
+        print("  ✓ testMakeAlignedTimer passed")
+    }
+
     static func runAll() {
         print("TimerScheduling Unit Tests")
         print("==========================")
@@ -111,6 +136,7 @@ enum TimerSchedulingTests {
         testDelayToNextSecond()
         testDelayBoundedByInterval()
         testTolerance()
+        testMakeAlignedTimer()
         print("\nAll TimerScheduling unit tests passed ✓")
     }
 }

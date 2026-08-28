@@ -157,6 +157,13 @@ public enum Decorator: String, CaseIterable, Sendable {
         case .bars: return "│"
         }
     }
+
+    /// Wraps `text` in this decorator's prefix/suffix. The single definition
+    /// shared by the menu bar renderer and the settings preview, so the two
+    /// can't drift apart.
+    public func apply(to text: String) -> String {
+        prefix + text + suffix
+    }
 }
 
 public struct StyleOptions: Equatable, Sendable {

@@ -47,6 +47,30 @@ public enum TimerScheduling {
         return min(interval * 0.1, 1.5)
     }
 
+    /// The one shared recipe for the app's clock tick, used by both the status
+    /// item and the popover so their cadences can't drift apart: a repeating
+    /// timer whose first fire lands on the next boundary (whole second, or top
+    /// of the minute in compact mode), with tolerance for wakeup coalescing.
+    /// Repeating fire dates derive from the original fire date, so per-fire
+    /// tolerance never accumulates drift. The returned timer is already added
+    /// to the main run loop in `.common` mode (so it ticks during menu and
+    /// event tracking); callers keep it to invalidate later.
+    @MainActor
+    public static func makeAlignedTimer(
+        compactTime: Bool,
+        onTick: @escaping @MainActor () -> Void
+    ) -> Timer {
+        let interval = Self.interval(compactTime: compactTime)
+        let delay = Self.delayToNextBoundary(after: Date(), interval: interval)
+        let timer = Timer(fire: Date().addingTimeInterval(delay), interval: interval, repeats: true) { _ in
+            // Timers added to the main run loop fire on the main thread.
+            MainActor.assumeIsolated { onTick() }
+        }
+        timer.tolerance = Self.tolerance(for: interval)
+        RunLoop.main.add(timer, forMode: .common)
+        return timer
+    }
+
     public static let utcCalendar: Calendar = {
         var c = Calendar(identifier: .gregorian)
         c.timeZone = .utc

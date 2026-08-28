@@ -12,7 +12,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Control+left-click on the status item now opens the context menu, matching
   the macOS secondary-click convention.
 - Esc closes the popover; clicks on the app's own windows (Settings, converter)
-  now dismiss it too.
+  now dismiss it too. The popover's displayed shortcuts (⌘, ⌘T ⌘Q) actually
+  work while it is open, and it slides in from the menu bar (plain fade under
+  Reduce Motion).
 - Status item tooltip and a localized VoiceOver label ("UTC Time <time>"
   instead of the emoji being read aloud).
 - Release pipeline: pushing a `v*` tag builds a universal (arm64 + x86_64)
@@ -37,6 +39,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Time zone converter UTC offsets refresh when the window regains key, instead
   of staying frozen at first-open values across DST changes.
 - macOS 14+ "secure coding for restorable state" console warning on launch.
+- Clock-change/wake notifications are now observed on the main queue; the
+  selector-based observers could be delivered off-main and trap the main-actor
+  assertion under Swift 6.
+- Rapidly reopening the popover during its close fade no longer hides the
+  fresh popover and leaks its event monitors.
+- Settings preview renders the actual resolved font, color, and decorator
+  instead of a hard-coded 18pt monospaced sample.
 
 ## [1.0.0] - 2026-06-02
 

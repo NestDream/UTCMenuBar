@@ -4,8 +4,8 @@ import AppKit
 /// Control-click routing is unit-testable without an NSStatusItem.
 public enum StatusItemClick {
     /// Whether the event should open the context menu instead of the popover.
-    /// True for a right-click, and for Control+left-click — the macOS
-    /// convention for a secondary click.
+    /// True for a right-click, and for Control+left-click (the macOS
+    /// convention for a secondary click).
     public static func isSecondary(
         eventType: NSEvent.EventType,
         modifiers: NSEvent.ModifierFlags
