@@ -94,7 +94,14 @@ final class PopoverController {
             visibleFrame: (buttonWindow.screen ?? NSScreen.main)?.visibleFrame
         )
 
-        panel.setFrameOrigin(origin)
+        // Origin-aware entrance: emerge downward from the menu bar (the
+        // trigger) rather than materializing in place. Collapses to a plain
+        // fade when the user asks for reduced motion.
+        let reduceMotion = NSWorkspace.shared.accessibilityDisplayShouldReduceMotion
+        let slide: CGFloat = reduceMotion ? 0 : 6
+        let finalFrame = NSRect(origin: origin, size: fittingSize)
+        let startFrame = finalFrame.offsetBy(dx: 0, dy: slide)
+        panel.setFrame(startFrame, display: false)
         panel.alphaValue = 0
         panel.orderFrontRegardless()
         // Take key without activating the app so Esc can dismiss the popover.
@@ -106,6 +113,7 @@ final class PopoverController {
             ctx.duration = 0.15
             ctx.timingFunction = CAMediaTimingFunction(name: .easeOut)
             panel.animator().alphaValue = 1
+            panel.animator().setFrame(finalFrame, display: true)
         }
 
         startEventMonitor()
