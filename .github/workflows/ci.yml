@@ -34,3 +34,10 @@ jobs:
         run: |
           chmod +x ./scripts/test.sh
           ./scripts/test.sh
+
+      # Keeps the bundling script honest — a broken Info.plist heredoc or
+      # codesign step should fail CI, not the next release.
+      - name: Build .app bundle (smoke)
+        run: |
+          chmod +x ./scripts/build-app.sh
+          ./scripts/build-app.sh release
