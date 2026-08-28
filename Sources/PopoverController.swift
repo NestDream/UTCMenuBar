@@ -27,7 +27,6 @@ final class PopoverController {
 
     init(
         statusItem: NSStatusItem,
-        styleStore: StyleOptionsStore,
         languageStore: LanguageStore,
         displayOptionsProvider: @escaping () -> DisplayOptions,
         onShowSettings: @escaping () -> Void,
@@ -37,7 +36,6 @@ final class PopoverController {
         self.statusItem = statusItem
 
         let viewModel = ClockPopoverViewModel(
-            styleStore: styleStore,
             languageStore: languageStore,
             displayOptionsProvider: displayOptionsProvider
         )

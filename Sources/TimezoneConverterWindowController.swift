@@ -25,7 +25,7 @@ final class TimezoneConverterWindowController: NSWindowController, NSWindowDeleg
         self.converterStore = converterStore
         self.languageStore = languageStore
         let window = NSWindow(
-            contentRect: NSRect(x: 0, y: 0, width: 520, height: 220),
+            contentRect: NSRect(x: 0, y: 0, width: 520, height: 236),
             styleMask: [.titled, .closable],
             backing: .buffered, defer: false)
         window.isReleasedWhenClosed = false
@@ -88,7 +88,7 @@ final class TimezoneConverterWindowController: NSWindowController, NSWindowDeleg
         utcLabel = NSTextField(labelWithString: "")
         targetLabel = NSTextField(labelWithString: "")
 
-        let labelWidth: CGFloat = 60
+        let labelWidth: CGFloat = 74
         for label in [timezoneLabel!, utcLabel!, targetLabel!] {
             label.alignment = .right
             label.setContentHuggingPriority(.required, for: .horizontal)
@@ -104,15 +104,33 @@ final class TimezoneConverterWindowController: NSWindowController, NSWindowDeleg
         let utcRow = hstack([utcLabel, utcField, copyUTCButton])
         let targetRow = hstack([targetLabel, targetField, copyTargetButton])
 
+        // The two fields convert in both directions; a swap glyph between
+        // them, aligned to the field column, says so without a word.
+        let swapIcon = NSImageView()
+        swapIcon.image = NSImage(
+            systemSymbolName: "arrow.up.arrow.down",
+            accessibilityDescription: "Bidirectional")
+        swapIcon.symbolConfiguration = NSImage.SymbolConfiguration(pointSize: 11, weight: .semibold)
+        swapIcon.contentTintColor = .tertiaryLabelColor
+        let swapRow = hstack([columnSpacer(), swapIcon])
+
+        // Tight inside the conversion pair, generous around it.
+        let conversionGroup = NSStackView(views: [utcRow, swapRow, targetRow])
+        conversionGroup.orientation = .vertical
+        conversionGroup.spacing = 5
+        conversionGroup.alignment = .left
+
+        let errorRow = hstack([columnSpacer(), errorLabel])
+
         let buttonRow = NSStackView(views: [NSView(), nowButton])
         buttonRow.orientation = .horizontal
         buttonRow.distribution = .fill
 
-        let outer = NSStackView(views: [tzRow, utcRow, targetRow, errorLabel, buttonRow])
+        let outer = NSStackView(views: [tzRow, conversionGroup, errorRow, buttonRow])
         outer.orientation = .vertical
-        outer.spacing = 12
+        outer.spacing = 14
         outer.alignment = .left
-        outer.edgeInsets = NSEdgeInsets(top: 20, left: 20, bottom: 16, right: 20)
+        outer.edgeInsets = NSEdgeInsets(top: 20, left: 20, bottom: 20, right: 20)
         outer.translatesAutoresizingMaskIntoConstraints = false
 
         let content = window!.contentView!
@@ -131,6 +149,14 @@ final class TimezoneConverterWindowController: NSWindowController, NSWindowDeleg
         }
     }
 
+    /// An empty view as wide as the label column, so a row without a label
+    /// still aligns its content with the field column.
+    private func columnSpacer(width: CGFloat = 74) -> NSView {
+        let spacer = NSView()
+        spacer.widthAnchor.constraint(equalToConstant: width).isActive = true
+        return spacer
+    }
+
     private func hstack(_ views: [NSView]) -> NSStackView {
         let stack = NSStackView(views: views)
         stack.orientation = .horizontal
@@ -145,9 +171,11 @@ final class TimezoneConverterWindowController: NSWindowController, NSWindowDeleg
         utcLabel.stringValue = Strings.t(.converterLabelUTC, language: lang)
         targetLabel.stringValue = Strings.t(.converterLabelTarget, language: lang)
         let copyTitle = Strings.t(.converterCopyButton, language: lang)
-        copyUTCButton.title = copyTitle
-        copyTargetButton.title = copyTitle
-        // Icon-only buttons need an explicit accessibility label for VoiceOver.
+        // Icon-only buttons: the name lives in the tooltip and, for VoiceOver,
+        // in an explicit accessibility label. Setting `title` too would draw
+        // text over the symbol despite imagePosition = .imageOnly.
+        copyUTCButton.toolTip = copyTitle
+        copyTargetButton.toolTip = copyTitle
         copyUTCButton.setAccessibilityLabel("\(copyTitle) UTC")
         copyTargetButton.setAccessibilityLabel("\(copyTitle) \(Strings.t(.converterLabelTarget, language: lang))")
         nowButton.title = Strings.t(.converterNowButton, language: lang)

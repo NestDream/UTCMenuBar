@@ -105,6 +105,9 @@ public enum StringKey: String, CaseIterable, Sendable {
     case updateAutoCheck
     case updateCannotReplace
 
+    // Settings sections
+    case settingsSectionDisplay
+
     // Launch at login
     case settingsSectionGeneral
     case settingsLaunchAtLogin
@@ -243,6 +246,8 @@ public enum Strings {
         .updateAutoCheck: "Automatically check for updates",
         .updateCannotReplace: "The app can't replace itself at its current location. Please download the new version manually.",
 
+        .settingsSectionDisplay: "Display",
+
         .settingsSectionGeneral: "General",
         .settingsLaunchAtLogin: "Launch at login",
         .launchAtLoginRequiresApproval: "Pending approval — open System Settings to enable",
@@ -344,6 +349,8 @@ public enum Strings {
         .updateFailedBody: "更新未能完成安装，可从发行页手动下载。",
         .updateAutoCheck: "自动检查更新",
         .updateCannotReplace: "无法在当前位置自动替换应用，请手动下载新版本。",
+
+        .settingsSectionDisplay: "显示",
 
         .settingsSectionGeneral: "通用",
         .settingsLaunchAtLogin: "开机启动",
