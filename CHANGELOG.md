@@ -9,6 +9,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+### Changed
+
+### Fixed
+
+## [1.2.0] - 2026-08-28
+
+### Added
+
 - In-app updates: "Check for Updates…" in the context menu and Settings, plus
   a daily automatic check (toggle in Settings). Updates download, validate
   (bundle id + version), swap the bundle, and relaunch — no more Gatekeeper
