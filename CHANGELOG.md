@@ -9,6 +9,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+### Changed
+
+### Fixed
+
+## [1.1.0] - 2026-08-28
+
+### Added
+
 - Control+left-click on the status item now opens the context menu, matching
   the macOS secondary-click convention.
 - Esc closes the popover; clicks on the app's own windows (Settings, converter)
