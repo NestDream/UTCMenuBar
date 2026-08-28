@@ -50,7 +50,28 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
+          ZIP="UTCMenuBar-${GITHUB_REF_NAME}.zip"
+          SHA256=$(shasum -a 256 "$ZIP" | cut -d' ' -f1)
+          # Install guidance is prepended to the auto-generated notes. The
+          # build is not notarized, so first launch needs Privacy & Security →
+          # Open Anyway (macOS 15+ removed the right-click → Open bypass).
+          NOTES=$(printf '%s\n' \
+            "## 安装 / Install" \
+            "" \
+            "首次安装：解压后把 **UTCMenuBar.app** 拖入「应用程序」，双击打开。macOS 会拦截未公证的应用：前往 **系统设置 → 隐私与安全性**，在页面底部点击 **仍要打开 (Open Anyway)**。或在终端执行：" \
+            "" \
+            'First install: unzip, drag **UTCMenuBar.app** into Applications, double-click. macOS blocks unnotarized apps: go to **System Settings → Privacy & Security** and click **Open Anyway** at the bottom. Or run:' \
+            "" \
+            '```bash' \
+            "xattr -d com.apple.quarantine /Applications/UTCMenuBar.app" \
+            '```' \
+            "" \
+            "装好之后无需再来 GitHub：右键菜单栏时钟 → **检查更新…** 即可在应用内升级。/ After that, updates install in-app: right-click the clock → **Check for Updates…**." \
+            "" \
+            "**SHA-256**: \`$SHA256\`" \
+            "")
           gh release create "$GITHUB_REF_NAME" \
             --title "$GITHUB_REF_NAME" \
             --generate-notes \
-            "UTCMenuBar-${GITHUB_REF_NAME}.zip"
+            --notes "$NOTES" \
+            "$ZIP"

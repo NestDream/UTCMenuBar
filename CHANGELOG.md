@@ -9,7 +9,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- In-app updates: "Check for Updates…" in the context menu and Settings, plus
+  a daily automatic check (toggle in Settings). Updates download, validate
+  (bundle id + version), swap the bundle, and relaunch — no more Gatekeeper
+  dance after the first install. See `specs/in-app-update/`.
+- Release notes now carry bilingual install instructions and the asset's
+  SHA-256 automatically.
+
 ### Changed
+
+- New app icon: a proper macOS squircle (the old art was an opaque gray
+  square) with a dial-plus-graticule design; the accent line is the prime
+  meridian. Rendered from code (`scripts/render-icon.swift`), so it can be
+  regenerated at any size.
+- README first-launch guidance updated for macOS 15+, where right-click →
+  Open no longer bypasses Gatekeeper.
 
 ### Fixed
 
