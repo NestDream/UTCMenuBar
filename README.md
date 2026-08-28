@@ -90,30 +90,36 @@ Requirements: macOS 13+, Apple Silicon. (Intel Macs: build from source — see b
 
 ### Option A — Download a release (recommended)
 
-1. Grab the latest `UTCMenuBar-vX.Y.Z-arm64.zip` from
-   [**Releases**](https://github.com/NestDream/UTCMenuBar/releases).
+1. Grab the latest `UTCMenuBar-vX.Y.Z.zip` (universal: Apple silicon + Intel)
+   from [**Releases**](https://github.com/NestDream/UTCMenuBar/releases).
 2. Unzip it and move `UTCMenuBar.app` to `/Applications`.
-3. **First launch — important:** the build is **not signed or notarized**
-   (this is a free hobby project without a paid Apple Developer account), so
-   macOS Gatekeeper will block a plain double-click with a message like
-   *“UTCMenuBar can’t be opened because Apple cannot check it for malicious
-   software.”* This is expected. To open it the first time:
+3. **First launch — important:** the build is **not notarized** (this is a
+   free hobby project without a paid Apple Developer account), so macOS blocks
+   the first double-click with *“Apple could not verify UTCMenuBar is free of
+   malware.”* This is expected, and it only happens once:
 
-   - **Right-click** (or Control-click) `UTCMenuBar.app` → **Open** → click
-     **Open** in the dialog. macOS remembers your choice, so every launch after
-     that is a normal double-click.
-   - If you don’t see an **Open** button, go to **System Settings → Privacy &
-     Security**, scroll to the message about UTCMenuBar, and click **Open
-     Anyway**.
+   - Double-click the app (let macOS block it), then open **System Settings →
+     Privacy & Security**, scroll to the bottom, and click **Open Anyway**.
+     (On macOS 15 and later this is the only UI path — right-click → Open no
+     longer bypasses the check.)
+   - Or clear the quarantine flag in Terminal:
+
+     ```bash
+     xattr -dr com.apple.quarantine /Applications/UTCMenuBar.app
+     ```
 
    > Prefer not to bypass Gatekeeper? Build from source instead (Option B) —
    > a build you compiled yourself runs without any prompt.
+
+   After the first install you never have to come back here: right-click the
+   menu bar clock → **Check for Updates…** downloads and installs new versions
+   in-app (the app also checks once a day; toggle it in Settings).
 
 4. (Optional) Verify the download against the SHA-256 printed in the release
    notes:
 
    ```bash
-   shasum -a 256 UTCMenuBar-vX.Y.Z-arm64.zip
+   shasum -a 256 UTCMenuBar-vX.Y.Z.zip
    ```
 
 To start it automatically at login: open **Settings (`⌘,`)** and toggle

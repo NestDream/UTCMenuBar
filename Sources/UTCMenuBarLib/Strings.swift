@@ -87,6 +87,24 @@ public enum StringKey: String, CaseIterable, Sendable {
     case converterErrorYearOutOfRange
     case converterErrorUnknownTimezone
 
+    // Common
+    case commonOK
+    case commonCancel
+
+    // In-app updates
+    case menuCheckForUpdates
+    case updateAvailableTitle
+    case updateInstall
+    case updateLater
+    case updateViewRelease
+    case updateSkipVersion
+    case updateUpToDateTitle
+    case updateDownloading
+    case updateFailedTitle
+    case updateFailedBody
+    case updateAutoCheck
+    case updateCannotReplace
+
     // Launch at login
     case settingsSectionGeneral
     case settingsLaunchAtLogin
@@ -106,6 +124,20 @@ public enum Strings {
         switch language {
         case .zh: return zh[key] ?? en[key] ?? key.rawValue
         case .en: return en[key] ?? key.rawValue
+        }
+    }
+
+    public static func formatUpdateAvailable(newVersion: String, currentVersion: String, language: AppLanguage) -> String {
+        switch language {
+        case .zh: return "新版本 \(newVersion) 可用（当前版本 \(currentVersion)）。"
+        case .en: return "Version \(newVersion) is available. You have \(currentVersion)."
+        }
+    }
+
+    public static func formatUpToDate(currentVersion: String, language: AppLanguage) -> String {
+        switch language {
+        case .zh: return "UTCMenuBar \(currentVersion) 已是最新版本。"
+        case .en: return "UTCMenuBar \(currentVersion) is the latest version."
         }
     }
 
@@ -195,6 +227,22 @@ public enum Strings {
         .converterErrorYearOutOfRange: "Year out of range (1900-2100)",
         .converterErrorUnknownTimezone: "Unknown timezone",
 
+        .commonOK: "OK",
+        .commonCancel: "Cancel",
+
+        .menuCheckForUpdates: "Check for Updates…",
+        .updateAvailableTitle: "Update Available",
+        .updateInstall: "Install Now",
+        .updateLater: "Later",
+        .updateViewRelease: "View Release Page",
+        .updateSkipVersion: "Skip this version",
+        .updateUpToDateTitle: "You're up to date",
+        .updateDownloading: "Downloading update…",
+        .updateFailedTitle: "Update failed",
+        .updateFailedBody: "The update could not be installed. You can download it manually from the releases page.",
+        .updateAutoCheck: "Automatically check for updates",
+        .updateCannotReplace: "The app can't replace itself at its current location. Please download the new version manually.",
+
         .settingsSectionGeneral: "General",
         .settingsLaunchAtLogin: "Launch at login",
         .launchAtLoginRequiresApproval: "Pending approval — open System Settings to enable",
@@ -280,6 +328,22 @@ public enum Strings {
         .converterErrorInvalidFormat: "无法解析时间，请使用 YYYY-MM-DD HH:MM:SS 格式",
         .converterErrorYearOutOfRange: "年份超出范围（1900-2100）",
         .converterErrorUnknownTimezone: "未知时区",
+
+        .commonOK: "好",
+        .commonCancel: "取消",
+
+        .menuCheckForUpdates: "检查更新…",
+        .updateAvailableTitle: "发现新版本",
+        .updateInstall: "立即更新",
+        .updateLater: "稍后",
+        .updateViewRelease: "查看发行页",
+        .updateSkipVersion: "跳过此版本",
+        .updateUpToDateTitle: "已是最新版本",
+        .updateDownloading: "正在下载更新…",
+        .updateFailedTitle: "更新失败",
+        .updateFailedBody: "更新未能完成安装，可从发行页手动下载。",
+        .updateAutoCheck: "自动检查更新",
+        .updateCannotReplace: "无法在当前位置自动替换应用，请手动下载新版本。",
 
         .settingsSectionGeneral: "通用",
         .settingsLaunchAtLogin: "开机启动",

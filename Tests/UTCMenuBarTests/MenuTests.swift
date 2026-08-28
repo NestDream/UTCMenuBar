@@ -29,19 +29,20 @@ enum MenuTests {
             setLanguage: nil,
             showSettings: nil,
             showTimezoneConverter: nil,
+            checkForUpdates: nil,
             quit: nil
         )
     }
 
-    /// Top-level menu has 9 items in this order:
+    /// Top-level menu has 10 items in this order:
     /// 0 显示日期, 1 紧凑时间, 2 紧凑日期, 3 separator, 4 外观▶, 5 设置… ⌘,,
-    /// 6 时区转换… ⌘T, 7 separator, 8 退出 ⌘Q
+    /// 6 时区转换… ⌘T, 7 检查更新…, 8 separator, 9 退出 ⌘Q
     static func testMenuStructureZh() {
         print("  Running: testMenuStructureZh...")
         let menu = buildDefault(language: .zh)
 
-        guard menu.items.count == 9 else {
-            fatalError("FAIL: Expected 9 menu items, got \(menu.items.count)")
+        guard menu.items.count == 10 else {
+            fatalError("FAIL: Expected 10 menu items, got \(menu.items.count)")
         }
 
         guard menu.items[0].title == "显示日期" else { fatalError("FAIL: item 0 title '\(menu.items[0].title)'") }
@@ -54,9 +55,10 @@ enum MenuTests {
         guard menu.items[6].title == "时区转换…" else { fatalError("FAIL: item 6 title '\(menu.items[6].title)'") }
         guard menu.items[6].keyEquivalent == "t" else { fatalError("FAIL: item 6 keyEquivalent '\(menu.items[6].keyEquivalent)'") }
         guard menu.items[6].keyEquivalentModifierMask.contains(.command) else { fatalError("FAIL: item 6 should have .command modifier") }
-        guard menu.items[7].isSeparatorItem else { fatalError("FAIL: item 7 should be separator") }
-        guard menu.items[8].title == "退出" else { fatalError("FAIL: item 8 title '\(menu.items[8].title)'") }
-        guard menu.items[8].keyEquivalent == "q" else { fatalError("FAIL: Quit keyEquivalent '\(menu.items[8].keyEquivalent)'") }
+        guard menu.items[7].title == "检查更新…" else { fatalError("FAIL: item 7 title '\(menu.items[7].title)'") }
+        guard menu.items[8].isSeparatorItem else { fatalError("FAIL: item 8 should be separator") }
+        guard menu.items[9].title == "退出" else { fatalError("FAIL: item 9 title '\(menu.items[9].title)'") }
+        guard menu.items[9].keyEquivalent == "q" else { fatalError("FAIL: Quit keyEquivalent '\(menu.items[9].keyEquivalent)'") }
 
         print("  ✓ testMenuStructureZh passed")
     }
@@ -64,7 +66,7 @@ enum MenuTests {
     static func testMenuStructureEn() {
         print("  Running: testMenuStructureEn...")
         let menu = buildDefault(language: .en)
-        guard menu.items.count == 9 else { fatalError("FAIL: Expected 9 menu items, got \(menu.items.count)") }
+        guard menu.items.count == 10 else { fatalError("FAIL: Expected 10 menu items, got \(menu.items.count)") }
         guard menu.items[0].title == "Show date" else { fatalError("FAIL: item 0 title '\(menu.items[0].title)'") }
         guard menu.items[1].title == "Compact time" else { fatalError("FAIL: item 1 title '\(menu.items[1].title)'") }
         guard menu.items[2].title == "Compact date" else { fatalError("FAIL: item 2 title '\(menu.items[2].title)'") }
@@ -72,7 +74,8 @@ enum MenuTests {
         guard menu.items[5].title == "Settings…" else { fatalError("FAIL: item 5 title '\(menu.items[5].title)'") }
         guard menu.items[6].title == "Time Zone Converter…" else { fatalError("FAIL: item 6 title '\(menu.items[6].title)'") }
         guard menu.items[6].keyEquivalent == "t" else { fatalError("FAIL: item 6 keyEquivalent '\(menu.items[6].keyEquivalent)'") }
-        guard menu.items[8].title == "Quit" else { fatalError("FAIL: item 8 title '\(menu.items[8].title)'") }
+        guard menu.items[7].title == "Check for Updates…" else { fatalError("FAIL: item 7 title '\(menu.items[7].title)'") }
+        guard menu.items[9].title == "Quit" else { fatalError("FAIL: item 9 title '\(menu.items[9].title)'") }
         print("  ✓ testMenuStructureEn passed")
     }
 

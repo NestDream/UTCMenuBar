@@ -30,9 +30,15 @@ APP="$ROOT/UTCMenuBar.app"
 
 cd "$ROOT"
 
-# Derive version from latest annotated tag like v0.6.0
+# Derive version from the latest tag like v1.2.0. Builds that are NOT exactly
+# on a tag get a -dev suffix: the in-app updater only offers updates to strict
+# x.y.z versions, so a self-built binary is never silently replaced by a
+# release download.
 if VERSION_TAG="$(git -C "$ROOT" describe --tags --match 'v*' --abbrev=0 2>/dev/null)"; then
     SHORT_VERSION="${VERSION_TAG#v}"
+    if [ "$(git -C "$ROOT" describe --tags --match 'v*' 2>/dev/null)" != "$VERSION_TAG" ]; then
+        SHORT_VERSION="${SHORT_VERSION}-dev"
+    fi
 else
     SHORT_VERSION="0.0.0-dev"
 fi

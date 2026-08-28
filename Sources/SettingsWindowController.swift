@@ -11,6 +11,7 @@ final class SettingsWindowController: NSWindowController, NSWindowDelegate {
         languageStore: LanguageStore,
         displayOptions: DisplayOptions,
         onPickCustomFont: @escaping () -> Void,
+        onCheckForUpdates: @escaping () -> Void,
         onDisplayOptionsChanged: @escaping (DisplayOptions) -> Void
     ) {
         let vm = SettingsViewModel2(
@@ -22,7 +23,11 @@ final class SettingsWindowController: NSWindowController, NSWindowDelegate {
         )
         self.viewModel = vm
 
-        let settingsView = SettingsView(viewModel: vm, onPickCustomFont: onPickCustomFont)
+        let settingsView = SettingsView(
+            viewModel: vm,
+            onPickCustomFont: onPickCustomFont,
+            onCheckForUpdates: onCheckForUpdates
+        )
         let hosting = NSHostingController(rootView: settingsView)
 
         let window = NSWindow(

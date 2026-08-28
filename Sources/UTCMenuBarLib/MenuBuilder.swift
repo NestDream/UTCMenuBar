@@ -20,6 +20,7 @@ public enum MenuBuilder {
         setLanguage: Selector?,
         showSettings: Selector?,
         showTimezoneConverter: Selector?,
+        checkForUpdates: Selector?,
         quit: Selector?
     ) -> NSMenu {
         let menu = NSMenu()
@@ -89,6 +90,13 @@ public enum MenuBuilder {
         converterItem.keyEquivalentModifierMask = [.command]
         converterItem.target = target
         menu.addItem(converterItem)
+
+        let updatesItem = NSMenuItem(
+            title: Strings.t(.menuCheckForUpdates, language: language),
+            action: checkForUpdates,
+            keyEquivalent: "")
+        updatesItem.target = target
+        menu.addItem(updatesItem)
 
         menu.addItem(NSMenuItem.separator())
 
