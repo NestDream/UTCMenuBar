@@ -13,6 +13,12 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     private var converterWindowController: TimezoneConverterWindowController?
     private var fontPanelDelegate: FontPanelDelegate?
     private var popoverController: PopoverController?
+    /// What the status item currently renders. Dedupes redundant re-renders
+    /// when several triggers fire for one state (a settings change reaches
+    /// updateTime via both the store listener and the direct call) and no-op
+    /// refreshes like a language change that doesn't alter the styled text.
+    private var lastRendered: (text: String, style: StyleOptions, language: AppLanguage)?
+    private var observerTokens: [(NotificationCenter, NSObjectProtocol)] = []
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
@@ -23,6 +29,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             button.target = self
             button.action = #selector(statusItemClicked(_:))
             button.sendAction(on: [.leftMouseUp, .rightMouseUp])
+            button.toolTip = Strings.t(.statusItemToolTip, language: languageStore.current)
         }
 
         // Initialize popover controller
@@ -41,63 +48,64 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             self.updateTime()
         }
 
-        languageStore.addListener { [weak self] _ in
-            _ = self  // kept for future use; no menu rebuild needed
+        languageStore.addListener { [weak self] lang in
+            guard let self else { return }
+            self.statusItem.button?.toolTip = Strings.t(.statusItemToolTip, language: lang)
+            self.updateTime()  // refreshes the localized accessibility label
         }
 
         updateTime()
         rebuildTimer()
 
-        NotificationCenter.default.addObserver(
-            self, selector: #selector(systemClockDidChange),
-            name: .NSSystemClockDidChange, object: nil)
-        NSWorkspace.shared.notificationCenter.addObserver(
-            self, selector: #selector(systemClockDidChange),
-            name: NSWorkspace.didWakeNotification, object: nil)
+        // Block-based observers pinned to the main queue: selector-based
+        // delivery happens on the posting thread, and .NSSystemClockDidChange
+        // makes no main-thread promise. An off-main post would trap the
+        // @MainActor isolation assertion in the selector thunk.
+        observerTokens.append((NotificationCenter.default, NotificationCenter.default.addObserver(
+            forName: .NSSystemClockDidChange, object: nil, queue: .main
+        ) { [weak self] _ in
+            MainActor.assumeIsolated { self?.handleClockChange() }
+        }))
+        let workspaceCenter = NSWorkspace.shared.notificationCenter
+        observerTokens.append((workspaceCenter, workspaceCenter.addObserver(
+            forName: NSWorkspace.didWakeNotification, object: nil, queue: .main
+        ) { [weak self] _ in
+            MainActor.assumeIsolated { self?.handleClockChange() }
+        }))
     }
 
     private func rebuildTimer() {
         timer?.invalidate()
-        let interval = TimerScheduling.interval(compactTime: displayOptions.compactTime)
-        // Align the first fire to the next boundary (whole second, or top of the
-        // minute in compact mode) so the displayed value never lags behind reality.
-        let delay = TimerScheduling.delayToNextBoundary(after: Date(), interval: interval)
-        let aligned = Timer(timeInterval: delay, repeats: false) { [weak self] _ in
-            Task { @MainActor in
-                guard let self else { return }
-                self.updateTime()
-                self.startRepeatingTimer(interval: interval)
-            }
+        timer = TimerScheduling.makeAlignedTimer(compactTime: displayOptions.compactTime) { [weak self] in
+            self?.updateTime()
         }
-        timer = aligned
-        RunLoop.current.add(aligned, forMode: .common)
     }
 
-    private func startRepeatingTimer(interval: TimeInterval) {
-        timer?.invalidate()
-        let repeating = Timer(timeInterval: interval, repeats: true) { [weak self] _ in
-            Task { @MainActor in self?.updateTime() }
-        }
-        timer = repeating
-        RunLoop.current.add(repeating, forMode: .common)
-    }
-
-    @objc private func systemClockDidChange() {
+    private func handleClockChange() {
         updateTime()
         rebuildTimer()
+    }
+
+    func applicationSupportsSecureRestorableState(_ app: NSApplication) -> Bool {
+        true
     }
 
     func applicationWillTerminate(_ notification: Notification) {
         timer?.invalidate()
         timer = nil
-        NotificationCenter.default.removeObserver(self)
-        NSWorkspace.shared.notificationCenter.removeObserver(self)
+        for (center, token) in observerTokens {
+            center.removeObserver(token)
+        }
+        observerTokens.removeAll()
     }
 
     @objc private func statusItemClicked(_ sender: Any?) {
         guard let event = NSApp.currentEvent else { return }
-        if event.type == .rightMouseUp {
-            // Show classic NSMenu on right-click
+        if StatusItemClick.isSecondary(eventType: event.type, modifiers: event.modifierFlags) {
+            // Right-click or Control+left-click shows the classic NSMenu.
+            // Dismiss an open popover first: its monitors deliberately ignore
+            // status-item clicks, so it would otherwise stack behind the menu.
+            popoverController?.close()
             let menu = buildMenu()
             statusItem.menu = menu
             statusItem.button?.performClick(nil)
@@ -132,15 +140,25 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     private func updateTime() {
-        let plain = TimeFormatter.formatDisplay(
-            date: Date(),
-            options: displayOptions,
-            iconPrefix: styleStore.current.iconPrefix
-        )
-        let styled = StyledTextBuilder.buildAttributedString(text: plain, style: styleStore.current)
         guard let button = statusItem.button else { return }
-        button.title = styled.string
-        button.attributedTitle = styled
+        let now = Date()
+        let style = styleStore.current
+        let language = languageStore.current
+        let plain = TimeFormatter.formatDisplay(
+            date: now,
+            options: displayOptions,
+            iconPrefix: style.iconPrefix
+        )
+        if let last = lastRendered, last.text == plain, last.style == style, last.language == language {
+            return
+        }
+        lastRendered = (plain, style, language)
+        button.attributedTitle = StyledTextBuilder.buildAttributedString(text: plain, style: style)
+        // VoiceOver reads the label instead of the emoji-prefixed title, so speak
+        // a localized name plus the icon-free time (the plain text minus the
+        // prefix, cheaper than a second formatter pass).
+        let spoken = plain.dropFirst(style.iconPrefix.prefix.count)
+        button.setAccessibilityLabel("\(Strings.t(.statusItemToolTip, language: language)) \(spoken)")
     }
 
     @objc private func toggleShowDate() {

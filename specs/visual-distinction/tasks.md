@@ -82,7 +82,7 @@
 
 - [x] 11.1 在 `FontFamily` 中新增 `case custom = "custom"`，`displayName` 返回 `"自定义…"`（_需求 12.1, 12.5_）
 - [x] 11.2 为 StyleOptions 新增 `customFontName: String = ""` 字段以及 `customFontNameKey`，更新 `init / save / load / default`（_需求 12.2, 12.8_）
-- [x] 11.3 扩展 `StyledTextBuilder.resolveFont` 接受可选 `customFontName`，新增 `.custom` 分支：非空且字体存在时使用，否则回退到 `NSFont.systemFont`（_需求 12.3, 12.4_）
+- [x] 11.3 扩展 `StyledTextBuilder.resolveFont` 接受可选 `customFontName`，新增 `.custom` 分支：非空且字体存在时使用，否则回退到等宽数字系统字体 `NSFont.monospacedDigitSystemFont`（_需求 12.3, 12.4_）
 - [x] 11.4 `MenuBuilder` 字体子菜单 displayName 改为闭包：当 `family == .custom && !customFontName.isEmpty` 时显示 `"自定义：<name>"`（_需求 12.5_）
 - [x] 11.5 AppDelegate 新增 `presentFontPanel()` 与 `FontPanelDelegate`：选中 `.custom` 时打开 NSFontPanel，并在 `changeFont(_:)` 通过 `manager.convert` 拿到选定字体并 `store.update { fontFamily = .custom; customFontName = picked.fontName }`（_需求 12.6, 12.7, 12.9_）
 - [x] 11.6 `SettingsWindowController` 接受 `onPickCustomFont` 闭包；popup 选中 `.custom` 时调用闭包；`refresh(from:)` 重写 popup item 标题以反映 `customFontName`（_需求 12.5, 12.6_）

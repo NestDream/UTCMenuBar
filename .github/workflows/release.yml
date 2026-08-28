@@ -1,0 +1,56 @@
+name: Release
+
+# Pushing a tag like v1.1.0 builds a universal (arm64 + x86_64) UTCMenuBar.app,
+# zips it, and publishes a GitHub Release with auto-generated notes.
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: build-and-publish
+    runs-on: macos-15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          # Full history: build-app.sh derives the version from `git describe`
+          # and the build number from the commit count.
+          fetch-depth: 0
+
+      - name: Select Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+
+      - name: Run tests
+        run: |
+          chmod +x ./scripts/test.sh
+          ./scripts/test.sh
+
+      - name: Build universal app bundle
+        run: |
+          chmod +x ./scripts/build-app.sh
+          ./scripts/build-app.sh release --universal
+
+      - name: Verify universal binary
+        run: |
+          BIN=UTCMenuBar.app/Contents/MacOS/UTCMenuBar
+          lipo -archs "$BIN"
+          lipo -archs "$BIN" | grep -q arm64
+          lipo -archs "$BIN" | grep -q x86_64
+
+      - name: Zip app bundle
+        run: ditto -c -k --keepParent UTCMenuBar.app "UTCMenuBar-${GITHUB_REF_NAME}.zip"
+
+      - name: Create GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" \
+            --title "$GITHUB_REF_NAME" \
+            --generate-notes \
+            "UTCMenuBar-${GITHUB_REF_NAME}.zip"

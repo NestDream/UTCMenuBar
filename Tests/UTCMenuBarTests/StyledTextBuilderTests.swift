@@ -155,6 +155,25 @@ enum StyledTextBuilderTests {
         print("  ✓ testResolveFontCustomUsesNameWhenValid passed")
     }
 
+    /// The `.system` family (and the `.custom` fallback) must render digits at a
+    /// fixed width, so the ticking clock doesn't change width every second and
+    /// shove neighboring status items around. Narrow and wide digit strings of
+    /// equal length must therefore measure identically.
+    static func testSystemFontDigitsAreFixedWidth() {
+        print("  Running: testSystemFontDigitsAreFixedWidth...")
+        let checks: [(FontFamily, String)] = [(.system, "system"), (.custom, "custom-fallback")]
+        for (family, label) in checks {
+            let font = StyledTextBuilder.resolveFont(family: family, weight: .regular, size: .standard, customFontName: "")
+            let attrs: [NSAttributedString.Key: Any] = [.font: font]
+            let narrow = NSAttributedString(string: "11:11:11", attributes: attrs).size().width
+            let wide = NSAttributedString(string: "88:88:88", attributes: attrs).size().width
+            guard abs(narrow - wide) < 0.01 else {
+                fatalError("FAIL: \(label) digits are proportional (11… \(narrow) vs 88… \(wide)); menu bar width would jitter")
+            }
+        }
+        print("  ✓ testSystemFontDigitsAreFixedWidth passed")
+    }
+
     static func testResolveColorAllCases() {
         print("  Running: testResolveColorAllCases...")
         guard StyledTextBuilder.resolveColor(option: .default) == nil else {
@@ -193,6 +212,7 @@ enum StyledTextBuilderTests {
         testResolveFontCustomFallsBackWhenEmpty()
         testResolveFontCustomFallsBackWhenInvalid()
         testResolveFontCustomUsesNameWhenValid()
+        testSystemFontDigitsAreFixedWidth()
         testResolveColorAllCases()
         print("\nAll StyledTextBuilder unit tests passed ✓")
     }

@@ -38,14 +38,15 @@ public final class ClockPopoverViewModel: ObservableObject {
     /// Whether the tick timer is currently running. Exposed for testing.
     public var isTicking: Bool { timer != nil }
 
-    /// Begins ticking. Called when the popover becomes visible. The interval
-    /// matches the menu-bar cadence (1s, or 60s in compact mode) so the popover
-    /// and status item stay consistent and the timer doesn't run while hidden.
+    /// Begins ticking. Called when the popover becomes visible. Uses the same
+    /// shared timer recipe as the status item (1s, or 60s in compact mode) so
+    /// the two stay consistent, and the timer doesn't run while hidden.
     public func startTicking() {
         updateTime()
-        let interval = TimerScheduling.interval(compactTime: displayOptionsProvider().compactTime)
-        let delay = TimerScheduling.delayToNextBoundary(after: Date(), interval: interval)
-        scheduleAligned(delay: delay, interval: interval)
+        timer?.invalidate()
+        timer = TimerScheduling.makeAlignedTimer(compactTime: displayOptionsProvider().compactTime) { [weak self] in
+            self?.updateTime()
+        }
     }
 
     public func stopTicking() {
@@ -56,28 +57,6 @@ public final class ClockPopoverViewModel: ObservableObject {
     /// Recomputes `currentTime` immediately from the current options. Exposed for testing.
     public func refresh() {
         updateTime()
-    }
-
-    private func scheduleAligned(delay: TimeInterval, interval: TimeInterval) {
-        timer?.invalidate()
-        let aligned = Timer(timeInterval: delay, repeats: false) { [weak self] _ in
-            Task { @MainActor in
-                guard let self else { return }
-                self.updateTime()
-                self.scheduleRepeating(interval: interval)
-            }
-        }
-        timer = aligned
-        RunLoop.current.add(aligned, forMode: .common)
-    }
-
-    private func scheduleRepeating(interval: TimeInterval) {
-        timer?.invalidate()
-        let repeating = Timer(timeInterval: interval, repeats: true) { [weak self] _ in
-            Task { @MainActor in self?.updateTime() }
-        }
-        timer = repeating
-        RunLoop.current.add(repeating, forMode: .common)
     }
 
     private func updateTime() {

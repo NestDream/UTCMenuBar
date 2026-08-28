@@ -155,12 +155,32 @@ final class TimezoneConverterWindowController: NSWindowController, NSWindowDeleg
         // so there is no need to rebuild all ~450 of them on a language change.
     }
 
+    /// The one place the popup's item title format lives. Item `i` always
+    /// corresponds to `timezoneIdentifiers[i]`; keep that invariant if the
+    /// popup ever gains separators or sections.
+    private static func popupTitle(for identifier: String, at date: Date) -> String {
+        "\(identifier) (\(offsetString(for: identifier, at: date)))"
+    }
+
     private func populateTimezonePopup() {
         timezonePopup.removeAllItems()
         let now = Date()
         for id in timezoneIdentifiers {
-            let offset = Self.offsetString(for: id, at: now)
-            timezonePopup.addItem(withTitle: "\(id) (\(offset))")
+            timezonePopup.addItem(withTitle: Self.popupTitle(for: id, at: now))
+        }
+    }
+
+    /// The window is created once and reused, so offsets computed at creation
+    /// go stale across DST transitions. Refresh titles in place (keeps the
+    /// selection) whenever the window regains key; offsets change only a few
+    /// times a year, so skip the writes when nothing differs.
+    func windowDidBecomeKey(_ notification: Notification) {
+        let now = Date()
+        for (i, id) in timezoneIdentifiers.enumerated() {
+            let title = Self.popupTitle(for: id, at: now)
+            if let item = timezonePopup.item(at: i), item.title != title {
+                item.title = title
+            }
         }
     }
 

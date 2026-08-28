@@ -17,7 +17,7 @@ public enum StyledTextBuilder {
         if let color = resolveColor(option: style.textColor) {
             attributes[.foregroundColor] = color
         }
-        let decorated = style.decorator.prefix + text + style.decorator.suffix
+        let decorated = style.decorator.apply(to: text)
         return NSAttributedString(string: decorated, attributes: attributes)
     }
 
@@ -30,7 +30,10 @@ public enum StyledTextBuilder {
         let pt = size.pointSize
         switch family {
         case .system:
-            return NSFont.systemFont(ofSize: pt, weight: weight.nsWeight)
+            // Monospaced-digit variant of the system font: letters stay
+            // proportional, but digits are tabular so the ticking clock keeps a
+            // constant width and neighboring status items don't shift every second.
+            return NSFont.monospacedDigitSystemFont(ofSize: pt, weight: weight.nsWeight)
         case .menlo:
             if let f = NSFont(name: "Menlo", size: pt) {
                 return applyWeight(to: f, weight: weight)
@@ -43,7 +46,7 @@ public enum StyledTextBuilder {
             if !trimmed.isEmpty, let f = NSFont(name: trimmed, size: pt) {
                 return applyWeight(to: f, weight: weight)
             }
-            return NSFont.systemFont(ofSize: pt, weight: weight.nsWeight)
+            return NSFont.monospacedDigitSystemFont(ofSize: pt, weight: weight.nsWeight)
         }
     }
 

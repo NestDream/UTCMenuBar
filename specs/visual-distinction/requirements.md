@@ -165,7 +165,7 @@
 1. THE MenuBarApp SHALL 在 `FontFamily` 枚举中新增 `.custom` case（rawValue `"custom"`），与既有的 `.system / .menlo / .sfMono` 并列
 2. THE StyleOptions SHALL 新增 `customFontName: String` 字段，默认 `""`，通过 UserDefaults 键 `styleOptions.customFontName` 持久化
 3. WHEN `fontFamily == .custom` 且 `customFontName` 非空且系统存在该字体, THE StyledTextBuilder SHALL 使用该字体渲染（保留当前 `FontWeight`/`FontSize`）
-4. IF `fontFamily == .custom` 且 `customFontName` 为空或字体在系统中不存在, THEN THE StyledTextBuilder SHALL 回退到系统字体（`NSFont.systemFont`）
+4. IF `fontFamily == .custom` 且 `customFontName` 为空或字体在系统中不存在, THEN THE StyledTextBuilder SHALL 回退到等宽数字系统字体（`NSFont.monospacedDigitSystemFont`，字母仍为比例宽度，数字为表格宽度，保证菜单栏宽度稳定）
 5. THE MenuBarApp SHALL 在字体子菜单和设置窗口的字体下拉框最末位置显示 "自定义…" 项；当 `fontFamily == .custom` 且 `customFontName` 非空时，标签显示为 "自定义：<fontName>"
 6. WHEN 用户在字体子菜单或设置窗口选择 "自定义…" 项, THE MenuBarApp SHALL 调用 `NSFontPanel.shared.makeKeyAndOrderFront(nil)` 弹出系统字体面板（同时通过 `NSFontManager` 设置当前选中字体）
 7. WHEN 用户在字体面板中选定一个字体, THE MenuBarApp SHALL 通过 `StyleOptionsStore.update` 同时写入 `fontFamily = .custom` 与 `customFontName = picked.fontName`

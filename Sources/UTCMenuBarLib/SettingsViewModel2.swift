@@ -163,6 +163,9 @@ public final class SettingsViewModel2: ObservableObject {
 
     private func updatePreview() {
         let opts = DisplayOptions(showDate: showDate, compactTime: compactTime, compactDate: compactDate)
-        previewText = TimeFormatter.formatDisplay(date: Date(), options: opts, iconPrefix: iconPrefix)
+        let text = TimeFormatter.formatDisplay(date: Date(), options: opts, iconPrefix: iconPrefix)
+        // Mirror the menu bar exactly, decorator included: a preview that
+        // renders something other than what ships erodes trust in the control.
+        previewText = decorator.apply(to: text)
     }
 }

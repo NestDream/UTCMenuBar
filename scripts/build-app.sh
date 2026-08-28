@@ -1,13 +1,30 @@
 #!/bin/bash
 # Builds UTCMenuBar.app — a runnable macOS .app bundle wrapping the SPM executable.
-# Usage: ./scripts/build-app.sh [debug|release]   (default: release)
+# Usage: ./scripts/build-app.sh [debug|release] [--universal]   (default: release)
+#
+# --universal builds an arm64 + x86_64 fat binary (use for release artifacts;
+# the default single-arch build is faster for local iteration).
 #
 # Version: derived from the latest git tag matching `v*` (stripped of the leading "v").
 # Falls back to "0.0.0-dev" when not in a git checkout or no tag exists.
 
 set -euo pipefail
 
-CONFIG="${1:-release}"
+CONFIG="release"
+# Plain string (not an array): macOS ships bash 3.2, where expanding an empty
+# array under `set -u` errors out.
+ARCH_FLAGS=""
+for arg in "$@"; do
+    case "$arg" in
+        debug|release) CONFIG="$arg" ;;
+        --universal) ARCH_FLAGS="--arch arm64 --arch x86_64" ;;
+        *)
+            echo "error: unknown argument '$arg'" >&2
+            echo "usage: $0 [debug|release] [--universal]" >&2
+            exit 2
+            ;;
+    esac
+done
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 APP="$ROOT/UTCMenuBar.app"
 
@@ -27,10 +44,11 @@ else
 fi
 
 echo "==> version $SHORT_VERSION (build $BUILD_NUMBER)"
-echo "==> swift build -c $CONFIG"
-swift build -c "$CONFIG"
+echo "==> swift build -c $CONFIG $ARCH_FLAGS"
+# shellcheck disable=SC2086  # intentional word splitting of the flag string
+swift build -c "$CONFIG" $ARCH_FLAGS
 
-BIN_PATH="$(swift build -c "$CONFIG" --show-bin-path)"
+BIN_PATH="$(swift build -c "$CONFIG" $ARCH_FLAGS --show-bin-path)"
 
 echo "==> assembling $APP"
 rm -rf "$APP"
@@ -63,11 +81,22 @@ cat > "$APP/Contents/Info.plist" <<PLIST
 	<string>AppIcon</string>
 	<key>LSUIElement</key>
 	<true/>
+	<key>LSApplicationCategoryType</key>
+	<string>public.app-category.utilities</string>
+	<key>NSHumanReadableCopyright</key>
+	<string>© 2026 Li Guo. MIT License.</string>
 	<key>NSPrincipalClass</key>
 	<string>NSApplication</string>
 </dict>
 </plist>
 PLIST
 
+# Ad-hoc signature: keeps the bundle's code signature valid after assembly so
+# macOS treats it consistently (TCC permission identity, launch services).
+# Distribution builds still need Developer ID + notarization to skip Gatekeeper.
+echo "==> codesign (ad-hoc)"
+codesign --force --sign - "$APP"
+
+echo "==> architectures: $(lipo -archs "$APP/Contents/MacOS/UTCMenuBar")"
 echo "==> done: $APP"
 echo "    run with: open $APP"

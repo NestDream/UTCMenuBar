@@ -23,18 +23,22 @@ struct ClockPopoverView: View {
                 Divider()
 
                 VStack(spacing: 2) {
+                    // The panel becomes key while open, so the displayed
+                    // shortcuts actually work, not just decorate.
                     PopoverButton(
                         title: Strings.t(.menuSettings, language: viewModel.language),
                         systemImage: "gearshape",
                         shortcut: "⌘,",
                         action: onSettings
                     )
+                    .keyboardShortcut(",", modifiers: .command)
                     PopoverButton(
                         title: Strings.t(.menuTimezoneConverter, language: viewModel.language),
                         systemImage: "globe",
                         shortcut: "⌘T",
                         action: onConverter
                     )
+                    .keyboardShortcut("t", modifiers: .command)
 
                     Divider()
                         .padding(.vertical, 4)
@@ -45,6 +49,7 @@ struct ClockPopoverView: View {
                         shortcut: "⌘Q",
                         action: onQuit
                     )
+                    .keyboardShortcut("q", modifiers: .command)
                 }
             }
             .padding(16)
