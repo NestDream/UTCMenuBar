@@ -17,6 +17,7 @@ final class TimezoneConverterWindowController: NSWindowController, NSWindowDeleg
     private var timezoneLabel: NSTextField!
     private var utcLabel: NSTextField!
     private var targetLabel: NSTextField!
+    private let swapIcon = NSImageView()
 
     private var isProgrammaticUpdate = false
     private var timezoneIdentifiers: [String] = []
@@ -106,10 +107,10 @@ final class TimezoneConverterWindowController: NSWindowController, NSWindowDeleg
 
         // The two fields convert in both directions; a swap glyph between
         // them, aligned to the field column, says so without a word.
-        let swapIcon = NSImageView()
+        // (Its VoiceOver label is localized in applyLanguage.)
         swapIcon.image = NSImage(
             systemSymbolName: "arrow.up.arrow.down",
-            accessibilityDescription: "Bidirectional")
+            accessibilityDescription: nil)
         swapIcon.symbolConfiguration = NSImage.SymbolConfiguration(pointSize: 11, weight: .semibold)
         swapIcon.contentTintColor = .tertiaryLabelColor
         let swapRow = hstack([columnSpacer(), swapIcon])
@@ -178,6 +179,7 @@ final class TimezoneConverterWindowController: NSWindowController, NSWindowDeleg
         copyTargetButton.toolTip = copyTitle
         copyUTCButton.setAccessibilityLabel("\(copyTitle) UTC")
         copyTargetButton.setAccessibilityLabel("\(copyTitle) \(Strings.t(.converterLabelTarget, language: lang))")
+        swapIcon.setAccessibilityLabel(Strings.t(.converterBidirectional, language: lang))
         nowButton.title = Strings.t(.converterNowButton, language: lang)
         // The timezone popup items (identifier + UTC offset) are language-independent,
         // so there is no need to rebuild all ~450 of them on a language change.

@@ -86,7 +86,7 @@ final class PopoverController {
         isClosing = false
         showGeneration += 1
 
-        let fittingSize = hostingView?.fittingSize ?? NSSize(width: 260, height: 200)
+        let fittingSize = hostingView?.fittingSize ?? NSSize(width: ClockPopoverView.width, height: 200)
         panel.setContentSize(fittingSize)
 
         let buttonRect = button.convert(button.bounds, to: nil)

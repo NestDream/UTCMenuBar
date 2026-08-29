@@ -61,11 +61,14 @@ enum PreviewRenderer {
             snapshot(settings, size: settings.fittingSize, appearance: appearance,
                      to: dir.appendingPathComponent("settings-\(suffix).png"))
 
-            // Timezone converter (AppKit window content)
+            // Timezone converter (AppKit window content). Clear the frame
+            // autosave name so the harness can never write a (headless)
+            // window frame into this process's persistent defaults.
             let converter = TimezoneConverterWindowController(
                 converterStore: converterStore,
                 languageStore: languageStore
             )
+            converter.window?.setFrameAutosaveName("")
             if let content = converter.window?.contentView {
                 snapshot(content, size: content.frame.size, appearance: appearance,
                          to: dir.appendingPathComponent("converter-\(suffix).png"))

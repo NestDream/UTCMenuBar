@@ -83,6 +83,7 @@ public enum StringKey: String, CaseIterable, Sendable {
     case converterLabelTarget
     case converterNowButton
     case converterCopyButton
+    case converterBidirectional
     case converterErrorInvalidFormat
     case converterErrorYearOutOfRange
     case converterErrorUnknownTimezone
@@ -226,6 +227,7 @@ public enum Strings {
         .converterLabelTarget: "Target",
         .converterNowButton: "Now",
         .converterCopyButton: "Copy",
+        .converterBidirectional: "Converts in both directions",
         .converterErrorInvalidFormat: "Invalid format. Use YYYY-MM-DD HH:MM:SS",
         .converterErrorYearOutOfRange: "Year out of range (1900-2100)",
         .converterErrorUnknownTimezone: "Unknown timezone",
@@ -330,6 +332,7 @@ public enum Strings {
         .converterLabelTarget: "目标",
         .converterNowButton: "现在",
         .converterCopyButton: "复制",
+        .converterBidirectional: "双向转换",
         .converterErrorInvalidFormat: "无法解析时间，请使用 YYYY-MM-DD HH:MM:SS 格式",
         .converterErrorYearOutOfRange: "年份超出范围（1900-2100）",
         .converterErrorUnknownTimezone: "未知时区",

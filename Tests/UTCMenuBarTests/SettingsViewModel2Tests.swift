@@ -152,10 +152,12 @@ enum SettingsViewModel2Tests {
         print("  ✓ testLaunchAtLoginErrorRollsBack passed")
     }
 
-    /// The preview must mirror the menu bar exactly: decorator wrapping and the
-    /// selected icon prefix both appear in previewText.
-    static func testPreviewMirrorsDecoratorAndIcon() {
-        print("  Running: testPreviewMirrorsDecoratorAndIcon...")
+    /// The preview must mirror the menu bar exactly. previewText carries the
+    /// icon prefix but NOT the decorator: the view renders it through
+    /// StyledTextBuilder.buildAttributedString (the menu-bar path), which
+    /// applies the decorator itself — wrapping twice would double-decorate.
+    static func testPreviewMirrorsMenuBarRendering() {
+        print("  Running: testPreviewMirrorsMenuBarRendering...")
         MainActor.assumeIsolated {
             let (defaults, name) = suite()
             defer { defaults.removePersistentDomain(forName: name) }
@@ -163,17 +165,26 @@ enum SettingsViewModel2Tests {
 
             vm.decorator = .brackets
             vm.iconPrefix = .globe
-            guard vm.previewText.hasPrefix("[🌐 "), vm.previewText.hasSuffix("]") else {
-                fatalError("FAIL: preview should be bracket-wrapped with globe prefix, got '\(vm.previewText)'")
+            guard vm.previewText.hasPrefix("🌐 "), !vm.previewText.contains("[") else {
+                fatalError("FAIL: previewText should have icon but no decorator, got '\(vm.previewText)'")
+            }
+            guard vm.currentStyle.decorator == .brackets, vm.currentStyle.iconPrefix == .globe else {
+                fatalError("FAIL: currentStyle should reflect the form's selections")
+            }
+            // The full render path produces exactly one decorator wrap.
+            let rendered = StyledTextBuilder.buildAttributedString(
+                text: vm.previewText, style: vm.currentStyle).string
+            guard rendered == "[\(vm.previewText)]" else {
+                fatalError("FAIL: rendered preview should be single-wrapped, got '\(rendered)'")
             }
 
             vm.decorator = .none
             vm.iconPrefix = .none
-            guard !vm.previewText.hasPrefix("["), !vm.previewText.contains("🌐") else {
-                fatalError("FAIL: preview should drop decorator and icon, got '\(vm.previewText)'")
+            guard !vm.previewText.contains("🌐") else {
+                fatalError("FAIL: preview should drop the icon, got '\(vm.previewText)'")
             }
         }
-        print("  ✓ testPreviewMirrorsDecoratorAndIcon passed")
+        print("  ✓ testPreviewMirrorsMenuBarRendering passed")
     }
 
     static func runAll() {
@@ -185,7 +196,7 @@ enum SettingsViewModel2Tests {
         testCompactDateGatedByShowDate()
         testLaunchAtLoginSuccess()
         testLaunchAtLoginErrorRollsBack()
-        testPreviewMirrorsDecoratorAndIcon()
+        testPreviewMirrorsMenuBarRendering()
         print("\nAll SettingsViewModel2 unit tests passed ✓")
     }
 }

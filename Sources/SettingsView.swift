@@ -17,15 +17,14 @@ struct SettingsView: View {
                     .foregroundStyle(.secondary)
                 HStack {
                     Spacer()
-                    Text(viewModel.previewText)
-                        .font(Font(StyledTextBuilder.resolveFont(
-                            family: viewModel.fontFamily,
-                            weight: viewModel.fontWeight,
-                            size: viewModel.fontSize,
-                            customFontName: viewModel.customFontName
-                        ) as CTFont))
-                        .foregroundStyle(previewColor)
-                        .lineLimit(1)
+                    // Rendered through the exact menu-bar path (font, color,
+                    // decorator all from StyledTextBuilder), so the preview
+                    // cannot drift from what ships.
+                    Text(AttributedString(StyledTextBuilder.buildAttributedString(
+                        text: viewModel.previewText,
+                        style: viewModel.currentStyle
+                    )))
+                    .lineLimit(1)
                     Spacer()
                 }
                 .frame(height: 30)
@@ -154,15 +153,7 @@ struct SettingsView: View {
         // One surface: the pinned preview header sits on the same background
         // as the grouped form, so there is no seam where the form begins.
         .background(Color(nsColor: .windowBackgroundColor))
-        .frame(width: 380, height: 540)
-    }
-
-    private var previewColor: Color {
-        // Same resolution path as the menu bar renderer, so the preview color
-        // can't drift from what actually ships.
-        if let ns = StyledTextBuilder.resolveColor(option: viewModel.textColor) {
-            return Color(nsColor: ns)
-        }
-        return .primary
+        // Tall enough that the pinned header doesn't push About below the fold.
+        .frame(width: 380, height: 600)
     }
 }

@@ -145,6 +145,20 @@ public final class SettingsViewModel2: ObservableObject {
         Strings.t(key, language: language)
     }
 
+    /// The style the form currently describes, for rendering the preview
+    /// through the exact same path as the menu bar (StyledTextBuilder).
+    public var currentStyle: StyleOptions {
+        StyleOptions(
+            fontFamily: fontFamily,
+            fontWeight: fontWeight,
+            fontSize: fontSize,
+            textColor: textColor,
+            decorator: decorator,
+            iconPrefix: iconPrefix,
+            customFontName: customFontName
+        )
+    }
+
     public func updateDisplayOptions(_ opts: DisplayOptions) {
         isSyncing = true
         showDate = opts.showDate
@@ -171,11 +185,11 @@ public final class SettingsViewModel2: ObservableObject {
         updatePreview()
     }
 
+    /// The undecorated preview text. The view feeds it through
+    /// `StyledTextBuilder.buildAttributedString(text:style:)` — the exact
+    /// menu-bar rendering path, which applies the decorator itself.
     private func updatePreview() {
         let opts = DisplayOptions(showDate: showDate, compactTime: compactTime, compactDate: compactDate)
-        let text = TimeFormatter.formatDisplay(date: Date(), options: opts, iconPrefix: iconPrefix)
-        // Mirror the menu bar exactly, decorator included: a preview that
-        // renders something other than what ships erodes trust in the control.
-        previewText = decorator.apply(to: text)
+        previewText = TimeFormatter.formatDisplay(date: Date(), options: opts, iconPrefix: iconPrefix)
     }
 }

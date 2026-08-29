@@ -12,6 +12,10 @@ let meridianAccent = Color(nsColor: NSColor(name: nil) { appearance in
 })
 
 struct ClockPopoverView: View {
+    /// Single source for the popover width; PopoverController's fallback
+    /// sizing reads it too, so the two can't drift.
+    static let width: CGFloat = 280
+
     @ObservedObject var viewModel: ClockPopoverViewModel
     let onSettings: () -> Void
     let onConverter: () -> Void
@@ -76,7 +80,7 @@ struct ClockPopoverView: View {
             }
         }
         .padding(14)
-        .frame(width: 280)
+        .frame(width: Self.width)
         // A plain rounded panel below the menu bar, the way system menu bar
         // extras present — no fake arrow nub.
         .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
