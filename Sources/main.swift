@@ -36,7 +36,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         // Initialize popover controller
         popoverController = PopoverController(
             statusItem: statusItem,
-            styleStore: styleStore,
             languageStore: languageStore,
             displayOptionsProvider: { [weak self] in self?.displayOptions ?? .default },
             onShowSettings: { [weak self] in self?.showSettings() },
@@ -259,7 +258,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                 languageStore: languageStore,
                 displayOptions: displayOptions,
                 onPickCustomFont: { [weak self] in self?.presentFontPanel() },
-                onCheckForUpdates: { [weak self] in self?.updateController?.checkForUpdates(userInitiated: true) },
+                onCheckForUpdates: { [weak self] in self?.checkForUpdates() },
                 onDisplayOptionsChanged: { [weak self] opts in
                     self?.displayOptions = opts
                     self?.updateTime()
@@ -326,6 +325,9 @@ final class FontPanelDelegate: NSObject {
 }
 
 let app = NSApplication.shared
+#if DEBUG
+PreviewRenderer.runIfRequested()
+#endif
 let delegate = AppDelegate()
 app.delegate = delegate
 app.setActivationPolicy(.accessory)

@@ -9,7 +9,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Debug builds accept `--render-previews <dir>` to snapshot every UI surface
+  to PNG in light and dark appearance (design review harness; compiled out of
+  release builds).
+
 ### Changed
+
+- Popover redesigned as a proper glance card: large monospaced-digit time,
+  a cyan "UTC" badge echoing the icon's prime meridian, and the full date as
+  a secondary line (the old single-string layout wrapped badly with the date
+  enabled and read the emoji icon into the hero text). The fake arrow nub is
+  gone — it's now a plain rounded panel like system menu bar extras. The
+  popover no longer mirrors the menu bar's icon/decorator styling; that lives
+  in the menu bar and the Settings preview.
+- Settings: the live preview is pinned above the form as a miniature menu bar
+  strip, next to the Appearance controls it reflects, instead of a section at
+  the bottom that scrolled out of view; the display toggles got a proper
+  section header.
+- Converter: the UTC and target fields now read as one bidirectional group
+  (swap glyph between them, error text aligned to the field column), the
+  label column no longer truncates "Time Zone", and the copy buttons are
+  properly icon-only — they used to draw the "Copy" title over the icon.
 
 ### Fixed
 

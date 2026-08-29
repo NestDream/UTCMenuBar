@@ -27,7 +27,6 @@ final class PopoverController {
 
     init(
         statusItem: NSStatusItem,
-        styleStore: StyleOptionsStore,
         languageStore: LanguageStore,
         displayOptionsProvider: @escaping () -> DisplayOptions,
         onShowSettings: @escaping () -> Void,
@@ -37,7 +36,6 @@ final class PopoverController {
         self.statusItem = statusItem
 
         let viewModel = ClockPopoverViewModel(
-            styleStore: styleStore,
             languageStore: languageStore,
             displayOptionsProvider: displayOptionsProvider
         )
@@ -88,7 +86,7 @@ final class PopoverController {
         isClosing = false
         showGeneration += 1
 
-        let fittingSize = hostingView?.fittingSize ?? NSSize(width: 260, height: 200)
+        let fittingSize = hostingView?.fittingSize ?? NSSize(width: ClockPopoverView.width, height: 200)
         panel.setContentSize(fittingSize)
 
         let buttonRect = button.convert(button.bounds, to: nil)

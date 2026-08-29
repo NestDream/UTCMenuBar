@@ -41,6 +41,7 @@ The status item shows e.g. `🌐 14:30:25 UTC`. Left-clicking opens a Liquid-Gla
 ```bash
 swift build                  # debug build
 swift run UTCMenuBar         # run as a CLI process (menu item appears)
+swift run UTCMenuBar --render-previews /tmp/previews  # debug-only: snapshot all UI surfaces to PNG (light+dark)
 ./scripts/test.sh            # run all tests
 ./scripts/build-app.sh       # build release UTCMenuBar.app
 open UTCMenuBar.app          # launch the bundled app
