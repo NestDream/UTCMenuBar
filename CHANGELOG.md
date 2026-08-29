@@ -9,6 +9,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+### Changed
+
+### Fixed
+
+## [1.3.0] - 2026-08-28
+
+### Added
+
 - Debug builds accept `--render-previews <dir>` to snapshot every UI surface
   to PNG in light and dark appearance (design review harness; compiled out of
   release builds).
