@@ -32,8 +32,7 @@ The status item shows e.g. `🌐 14:30:25 UTC`. Left-clicking opens a Liquid-Gla
 │   ├── display-options/      # DONE
 │   ├── visual-distinction/   # DONE
 │   └── timezone-converter/   # DONE
-├── AppIcon.icns           # bundle icon (also AppIcon.iconset/, icon.png source)
-└── _archive/              # legacy Xcode project — do not modify (see _archive/README.md)
+└── AppIcon.icns           # bundle icon (also AppIcon.iconset/, icon.png source)
 ```
 
 ## Common commands
@@ -97,4 +96,3 @@ When implementing from a spec: walk down `tasks.md`, mark each `[x]` as you comp
 
 - `swift run UTCMenuBar` works but the process needs to keep running for the menu bar item to stay visible — it's not a daemon. The `.app` bundle is the proper deliverable.
 - `LSUIElement=true` in Info.plist is what makes it Dock-less. Don't drop it.
-- The Xcode project under `_archive/UTCMenuBar-xcode/` is a frozen copy. Do not edit it. If you need to update behavior, edit the SPM sources.

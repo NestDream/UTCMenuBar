@@ -5,33 +5,24 @@
 <h1 align="center">UTCMenuBar</h1>
 
 <p align="center">
-  <i>UTC at a glance. Local time right where you left it.</i>
-  <br>
-  <b>A small Mac menu bar clock for everyone who works across time zones.</b>
+  A UTC clock for your Mac's menu bar.
 </p>
 
 <p align="center">
   <a href="https://github.com/NestDream/UTCMenuBar/releases/latest"><img src="https://img.shields.io/github/v/release/NestDream/UTCMenuBar?style=flat-square&amp;color=086F98" alt="Latest release"></a>
   <img src="https://img.shields.io/badge/macOS-13%2B-086F98?style=flat-square" alt="macOS 13 or later">
   <img src="https://img.shields.io/badge/Apple%20Silicon%20%2B%20Intel-333333?style=flat-square" alt="Apple Silicon and Intel">
-  <img src="https://img.shields.io/badge/Swift-6-F05138?style=flat-square&amp;logo=swift&amp;logoColor=white" alt="Swift 6">
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-086F98?style=flat-square" alt="MIT license"></a>
 </p>
 
 <p align="center">
-  <a href="#-install">Download</a> ·
-  <a href="#-screenshots">Screenshots</a> ·
-  <a href="#-make-it-yours">Appearance</a> ·
-  <a href="#-convert-in-both-directions">Time zones</a> ·
-  <a href="#-privacy">Privacy</a> ·
+  <a href="#install">Download</a> ·
+  <a href="#screenshots">Screenshots</a> ·
+  <a href="#build-from-source">Build from source</a> ·
   <a href="README.zh-CN.md">简体中文</a>
 </p>
 
----
-
-A log says `14:30 UTC`. Your Mac says `7:30`. Keep both in view.
-
-UTCMenuBar adds a dedicated UTC clock beside your Mac's local clock. Give it a different font, color, or a pair of brackets, and you can tell the two apart before reading the digits. Useful for on-call shifts, deployment windows, and conversations that cross time zones.
+UTCMenuBar displays UTC in the menu bar while your system clock stays on local time. You can change its font, color, and style to tell the two apart. It also includes a converter for looking up times in other time zones.
 
 <p align="center">
   <picture>
@@ -40,57 +31,57 @@ UTCMenuBar adds a dedicated UTC clock beside your Mac's local clock. Give it a d
   </picture>
 </p>
 
-<p align="center"><sub>One clock, your choice of emphasis. Examples rendered with the app's own text formatter and styling.</sub></p>
+<p align="center"><sub>Example menu bar styles, rendered with the app's formatter.</sub></p>
 
-## 📦 Install
+## Install
 
-**[Download the latest release](https://github.com/NestDream/UTCMenuBar/releases/latest)** — macOS 13 Ventura or later, on Apple Silicon **or** Intel. The release ZIP contains a universal app.
+**[Download the latest release](https://github.com/NestDream/UTCMenuBar/releases/latest)** for macOS 13 Ventura or later. The same ZIP works on Apple Silicon and Intel.
 
-1. Download `UTCMenuBar-vX.Y.Z.zip`, unzip it, and move **UTCMenuBar.app** into **Applications**.
-2. Open the app. Its clock appears in the menu bar; there is no Dock icon.
-3. To start it with your Mac, open **Settings → Launch at login**.
+1. Unzip `UTCMenuBar-vX.Y.Z.zip` and move **UTCMenuBar.app** to **Applications**.
+2. Open the app. The clock appears in the menu bar, with no Dock icon.
+3. To start it automatically, enable **Settings → Launch at login**.
 
 > [!NOTE]
-> Release builds are ad-hoc signed and **not notarized by Apple**. If macOS blocks the first launch, and you trust the download, open **System Settings → Privacy & Security → Open Anyway** after attempting to open it. You can also [build from source](#-development).
+> Release builds are ad-hoc signed but not notarized by Apple. If macOS blocks the first launch, confirm that you downloaded it from this repository, then go to **System Settings → Privacy & Security → Open Anyway**. You can also [build from source](#build-from-source).
 
-Each release includes a SHA-256 checksum in its notes. To compare your download:
+Release notes include a SHA-256 checksum. To check your download:
 
 ```sh
 shasum -a 256 ~/Downloads/UTCMenuBar-vX.Y.Z.zip
 ```
 
-For subsequent versions, right-click the clock and choose **Check for Updates…**. The app asks before downloading and installing an update. Automatic checks are enabled by default and can be turned off in Settings.
+For later versions, right-click the clock and choose **Check for Updates…**. The app asks before downloading and installing an update.
 
-## 📸 Screenshots
+## Screenshots
 
-The app's native SwiftUI and AppKit views, rendered with sample data. Images follow your light or dark appearance; the [full gallery](docs/SCREENSHOTS.md) shows both, in English and 简体中文.
+These images use the app's views with sample data. See the [full gallery](docs/SCREENSHOTS.md) for light and dark versions in English and 简体中文.
 
 <table>
-  <tr><th>A click away</th><th>UTC ↔ your selected time zone</th></tr>
+  <tr><th>Clock panel</th><th>Time zone converter</th></tr>
   <tr>
     <td align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/assets/screenshots/popover-en-dark.png"><img src="docs/assets/screenshots/popover-en-light.png" width="280" alt="UTC popover showing 14:30, the full date, and shortcuts for Settings, Time Zone Converter, and Quit"></picture></td>
     <td align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/assets/screenshots/converter-en-dark.png"><img src="docs/assets/screenshots/converter-en-light.png" width="520" alt="Time Zone Converter showing 2026-09-25 14:30 UTC as 07:30 in America/Los_Angeles, with a copy button for each value"></picture></td>
   </tr>
 </table>
 
-## ⚡ How to use
+## Usage
 
 | Action | What happens |
 | --- | --- |
-| **Click** the clock | Open the live UTC panel, with the full date and quick actions. |
-| **Right-click** or **Control-click** | Open display options, Appearance, language, and updates. |
-| **⌘,** | Open Settings, with a preview of your menu bar clock. |
-| **⌘T** | Open the Time Zone Converter. |
-| **Esc** | Close the popover. |
-| **⌘Q** | Quit UTCMenuBar. |
+| Click the clock | Show UTC time, the full date, and shortcuts to Settings and the converter |
+| Right-click or Control-click | Open display options, appearance, language, and updates |
+| ⌘, | Open Settings |
+| ⌘T | Open the time zone converter |
+| Esc | Close the clock panel |
+| ⌘Q | Quit |
 
-Keyboard shortcuts work while the popover is open; they are not system-wide hotkeys.
+Keyboard shortcuts work while the clock panel is open.
 
-The default display is `🌐 09/25 14:30 UTC`: a compact date and 24-hour time. Turn off **Compact time** to show seconds, turn off **Compact date** for `2026-09-25`, or turn off **Show date** for a shorter clock. The date is always the date **in UTC**.
+The default display is `🌐 09/25 14:30 UTC`. Turn off **Compact time** to show seconds, turn off **Compact date** for `2026-09-25`, or turn off **Show date** to hide the date. The clock uses 24-hour time, and the date is always in UTC.
 
-## 🎨 Make it yours
+## Appearance
 
-Open **Settings → Appearance** and watch the pinned preview as you change the clock.
+In **Settings → Appearance**, you can change the font, weight, size, color, icon, and surrounding brackets or bars. Choose System, Menlo, SF Mono, or another installed font. The preview updates as you make changes.
 
 <p align="center">
   <picture>
@@ -99,61 +90,30 @@ Open **Settings → Appearance** and watch the pinned preview as you change the 
   </picture>
 </p>
 
-| Setting | Choices |
-| --- | --- |
-| **Font** | System, Menlo, SF Mono, or any installed font through the macOS font panel |
-| **Weight & size** | Four weights; Small, Standard, or Large |
-| **Color** | Default, Blue, Green, Orange, Purple, or Red; system colors adapt to appearance |
-| **Icon** | 🌐 Globe, 🕐 Clock, 🧭 Compass, 🌍 Earth, or no icon |
-| **Decorator** | Plain, `[brackets]`, `(parentheses)`, or `│bars│` |
-| **Language** | English or 简体中文; switch immediately without restarting |
+Settings also lets you switch between English and 简体中文 without restarting. Your preferences are saved for the next launch.
 
-Styling applies to the menu bar and Settings preview. The popover keeps its own large, readable clock. Preferences are saved locally and restored on the next launch.
+## Time zone conversion
 
-## 🌐 Convert in both directions
-
-Open **Time Zone Converter…**, choose a time zone, and edit either field:
+Open **Time Zone Converter…**, choose a target time zone, and enter a time in either field. The other field updates to match:
 
 ```text
 UTC                    2026-09-25 14:30:00
 America/Los_Angeles     2026-09-25 07:30:00
 ```
 
-**UTC → local:** paste a UTC timestamp to find the corresponding local time. **Local → UTC:** edit the target field to get a UTC timestamp for a deployment or handoff.
+Use `YYYY-MM-DD HH:MM:SS`. **Now** fills in the current time, and the copy buttons copy either value. The app remembers your selected time zone and uses macOS time-zone rules, including daylight saving time.
 
-Use `YYYY-MM-DD HH:MM:SS`. **Now** fills both fields with the current instant; the copy button beside either field copies its value. The app remembers your selected time zone and uses macOS time-zone rules for the entered date, including daylight saving time.
+The converter works with one target zone at a time. The menu bar clock always shows UTC.
 
-The converter handles one selected target zone at a time. The menu bar clock always stays on UTC.
+## Privacy and updates
 
-## 🔒 Privacy
+The clock and converter work offline using your Mac's system time and time-zone data. Settings are stored locally. There are no accounts, ads, or telemetry.
 
-No accounts, subscriptions, ads, or telemetry. Clock display and time-zone conversion run locally using your Mac's clock and time-zone data.
+Update checks contact GitHub. Automatic checks are on by default and run at launch if at least 24 hours have passed since the last successful check. You can turn them off in **Settings → Automatically check for updates**.
 
-**Update checks use the network.** The app contacts GitHub for release information and downloads a release when you choose **Install Now**. Automatic checks run on eligible launches, at most once per 24 hours after a successful check. Disable **Automatically check for updates** in Settings if you prefer manual checks.
+## Build from source
 
-Appearance, language, display options, the selected time zone, and update preferences stay in local `UserDefaults`. The app does not need Accessibility or Screen Recording permission.
-
-## ❓ FAQ
-
-#### Does this change my Mac's time zone?
-
-No. Your system clock stays as it is. UTCMenuBar displays the same instant in UTC.
-
-#### Does it need an internet time server?
-
-The clock and converter work offline. UTCMenuBar reads your Mac's system time; it does not independently synchronize it with a time server.
-
-#### Can I show several clocks, use 12-hour time, or copy an ISO timestamp?
-
-The menu bar currently shows one UTC clock in 24-hour format. Copying is available in the converter as `YYYY-MM-DD HH:MM:SS`; clicking the menu bar clock opens the popover. Multiple pinned zones, a 12-hour option, and direct ISO / Unix timestamp copying are not implemented. See the [roadmap](docs/ROADMAP.md).
-
-#### Why is there no Dock icon?
-
-UTCMenuBar is a menu bar accessory. Open Settings or quit from its clock. Launch-at-login is optional.
-
-## 🛠 Development
-
-Requires **macOS 13+** and a **Swift 6 toolchain with the macOS SDK**. Check `swift --version` before building. This is a Swift Package Manager project with **zero external package dependencies**.
+Requires macOS 13+ and a Swift 6 toolchain with the macOS SDK. The project uses Swift Package Manager and has no external dependencies.
 
 ```sh
 git clone https://github.com/NestDream/UTCMenuBar.git
@@ -162,13 +122,13 @@ cd UTCMenuBar
 open UTCMenuBar.app
 ```
 
-The script builds a release app for your Mac's architecture. Move the resulting `UTCMenuBar.app` to Applications for daily use. To build for both architectures:
+This builds a release app for your Mac's architecture. To build for both Apple Silicon and Intel:
 
 ```sh
 ./scripts/build-app.sh release --universal
 ```
 
-For development and verification:
+For development:
 
 ```sh
 swift build                     # debug build
@@ -176,18 +136,10 @@ swift build                     # debug build
 ./scripts/build-app.sh debug    # debug app bundle
 ```
 
-Tests cover formatting, preferences, styling, conversion, menu actions, view models, popover placement, timer scheduling, and update decisions. The project uses a custom executable test runner, so use `scripts/test.sh` rather than `swift test`.
+Tests use a custom executable runner; run `scripts/test.sh` rather than `swift test`.
 
-| Path | Purpose |
-| --- | --- |
-| [`Sources/`](Sources/) | AppKit status item and windows, SwiftUI views, login items, and update flow |
-| [`Sources/UTCMenuBarLib/`](Sources/UTCMenuBarLib/) | Models, formatters, stores, view models, and testable helpers |
-| [`Tests/UTCMenuBarTests/`](Tests/UTCMenuBarTests/) | Unit and randomized property tests |
-| [`specs/`](specs/) | Feature requirements, designs, and implementation tasks |
-| [`scripts/`](scripts/) | App packaging, tests, icon rendering, and documentation images |
-
-Contributions are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md) for the workflow, [CHANGELOG.md](CHANGELOG.md) for release history, and the [screenshot gallery](docs/SCREENSHOTS.md#regenerating-the-images) to regenerate the documentation images. The legacy Xcode project under `_archive/` is kept for reference.
+See [CONTRIBUTING.md](CONTRIBUTING.md) for the project layout and contribution guide, [CHANGELOG.md](CHANGELOG.md) for release history, and the [roadmap](docs/ROADMAP.md) for planned features.
 
 ## License
 
-[MIT](LICENSE). Free to use, study, and modify.
+[MIT](LICENSE)

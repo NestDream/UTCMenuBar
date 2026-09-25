@@ -21,9 +21,8 @@ deeper architectural picture (module-by-module breakdown, state flow, known trap
   swift --version
   ```
 
-> Note: this is a **Swift Package Manager** project, **not** an Xcode project. You build and
-> test from the command line. There is a frozen legacy Xcode project under `_archive/` — do
-> not edit it; all real work happens in the SPM sources.
+> This is a **Swift Package Manager** project. Build and test from the command line using
+> the commands below.
 
 There are **no external dependencies** to fetch — the project uses only AppKit, Foundation,
 and a thin SwiftUI/Combine layer from the system SDK.
@@ -149,7 +148,6 @@ by the runner without spinning up AppKit. Anything in the lib that `main.swift` 
 - **UserDefaults keys** use dotted, per-feature prefixes: `displayOptions.*`, `styleOptions.*`,
   `timezoneConverter.*`, `app.language`.
 - **Don't drop `LSUIElement=true`** from `Info.plist` — it's what keeps the app out of the Dock.
-- **Don't touch `_archive/`** — edit the SPM sources instead.
 
 ## Spec workflow
 
