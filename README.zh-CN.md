@@ -40,7 +40,7 @@ UTCMenuBar 在系统时钟旁边添上一枚 UTC 时钟。换一种字体、一�
   </picture>
 </p>
 
-<p align="center"><sub>同一枚时钟，按你的习惯呈现。示例由应用实际使用的时间格式化与样式代码绘制。</sub></p>
+<p align="center"><sub>同一枚时钟，按你的习惯呈现。示例由应用实际使用的时间格式化与样式代码绘制。查看原图：<a href="docs/assets/styles-light.png">浅色</a> · <a href="docs/assets/styles-dark.png">深色</a>。</sub></p>
 
 ## 📦 安装
 
@@ -48,7 +48,7 @@ UTCMenuBar 在系统时钟旁边添上一枚 UTC 时钟。换一种字体、一�
 
 1. 下载 `UTCMenuBar-vX.Y.Z.zip`，解压后将 **UTCMenuBar.app** 拖入**应用程序**。
 2. 打开应用，时钟会出现在菜单栏中，不占用 Dock。
-3. 如果希望随 Mac 启动，在**设置 → 开机启动**中开启即可。
+3. 如果希望随 Mac 启动，在**设置 → 通用 → 开机启动**中开启即可。
 
 > [!NOTE]
 > 发行版使用临时签名，**尚未经过 Apple 公证**。如果 macOS 拦截首次启动，请先确认下载来源可信，再于尝试打开后前往**系统设置 → 隐私与安全性 → 仍要打开**。也可以选择[从源码构建](#-开发)。
@@ -63,13 +63,13 @@ shasum -a 256 ~/Downloads/UTCMenuBar-vX.Y.Z.zip
 
 ## 📸 界面一览
 
-以下图片由应用的原生 SwiftUI 和 AppKit 视图渲染，使用示例数据。图片会随页面切换浅色或深色；[完整图集](docs/SCREENSHOTS.md)包含中英文界面的两种外观。
+以下为应用原生 SwiftUI 和 AppKit 视图的 **3× 高清截图**，使用示例数据。图片会随页面切换浅色或深色，点击下方原图链接可查看完整细节；[完整图集](docs/SCREENSHOTS.md)包含中英文界面的两种外观。
 
 <table>
   <tr><th>点击即可展开</th><th>UTC ↔ 所选时区</th></tr>
   <tr>
-    <td align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/assets/screenshots/popover-zh-dark.png"><img src="docs/assets/screenshots/popover-zh-light.png" width="280" alt="UTC 浮窗显示 14:30、完整日期，以及设置、时区转换和退出快捷操作"></picture></td>
-    <td align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/assets/screenshots/converter-zh-dark.png"><img src="docs/assets/screenshots/converter-zh-light.png" width="520" alt="时区转换窗口：2026-09-25 14:30 UTC 对应洛杉矶 07:30，两个时间字段均有复制按钮"></picture></td>
+    <td align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/assets/screenshots/popover-zh-dark.png"><img src="docs/assets/screenshots/popover-zh-light.png" width="292" alt="UTC 浮窗显示 14:30、完整日期，以及设置、时区转换和退出快捷操作"></picture><br><sub>查看原图：<a href="docs/assets/screenshots/popover-zh-light.png">浅色</a> · <a href="docs/assets/screenshots/popover-zh-dark.png">深色</a></sub></td>
+    <td align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/assets/screenshots/converter-zh-dark.png"><img src="docs/assets/screenshots/converter-zh-light.png" width="460" alt="时区转换窗口：2026-09-25 14:30 UTC 对应洛杉矶 07:30，两个时间字段均有复制按钮"></picture><br><sub>查看原图：<a href="docs/assets/screenshots/converter-zh-light.png">浅色</a> · <a href="docs/assets/screenshots/converter-zh-dark.png">深色</a></sub></td>
   </tr>
 </table>
 
@@ -90,13 +90,15 @@ shasum -a 256 ~/Downloads/UTCMenuBar-vX.Y.Z.zip
 
 ## 🎨 让 UTC 一眼可辨
 
-打开**设置 → 外观**，边调整边查看固定在顶部的预览。
+打开**设置 → 外观**，边调整边查看固定在顶部的预览。**通用**集中管理显示、语言、开机启动和自动更新；**关于**提供版本信息和手动检查更新。
 
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="docs/assets/screenshots/settings-zh-dark.png">
-    <img src="docs/assets/screenshots/settings-zh-light.png" width="380" alt="UTCMenuBar 中文外观设置，包含字体与样式选项，以及顶部固定的时钟预览">
+    <img src="docs/assets/screenshots/settings-zh-light.png" width="440" alt="UTCMenuBar 中文外观设置，包含字体与样式选项，以及顶部固定的时钟预览">
   </picture>
+  <br>
+  <sub>查看原图：<a href="docs/assets/screenshots/settings-zh-light.png">浅色</a> · <a href="docs/assets/screenshots/settings-zh-dark.png">深色</a></sub>
 </p>
 
 | 设置 | 可选项 |
@@ -106,7 +108,7 @@ shasum -a 256 ~/Downloads/UTCMenuBar-vX.Y.Z.zip
 | **颜色** | 默认、蓝、绿、橙、紫、红；系统动态颜色适配浅色与深色外观 |
 | **图标** | 🌐 地球仪、🕐 时钟、🧭 指南针、🌍 地球，或不显示图标 |
 | **装饰** | 无装饰、`[方括号]`、`(圆括号)` 或 `│竖线│` |
-| **语言** | English 与简体中文，即时切换，无需重启 |
+| **语言（通用）** | English 与简体中文，即时切换，无需重启 |
 
 自定义样式用于菜单栏和设置预览；浮窗保留独立的大号时钟布局。偏好保存在本机，下次启动时自动恢复。
 
@@ -121,7 +123,9 @@ America/Los_Angeles     2026-09-25 07:30:00
 
 **UTC → 当地时间：**粘贴日志中的 UTC 时间，查看当地几点。**当地时间 → UTC：**修改目标时间，为发布计划或交接记录生成 UTC 时间。
 
-输入格式为 `YYYY-MM-DD HH:MM:SS`。点击**现在**可填入当前时刻；字段旁的复制按钮可复制对应时间。应用会记住所选时区，并根据输入日期使用 macOS 的时区规则转换，包括夏令时。
+输入格式为 `YYYY-MM-DD HH:MM:SS`。点击**现在**可填入当前时刻；字段旁的复制按钮在复制成功后会短暂显示对勾。输入为空或无效时，复制按钮不可用；无效输入会显示错误提示。
+
+应用会记住所选时区，并根据输入日期使用 macOS 的时区规则转换，包括夏令时。
 
 转换器每次处理一个目标时区，菜单栏时钟始终显示 UTC。
 

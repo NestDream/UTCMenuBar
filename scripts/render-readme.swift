@@ -6,6 +6,7 @@ import UTCMenuBarLib
 @main
 @MainActor
 enum ReadmeRenderer {
+    static let captureScale: CGFloat = 3
     static let sampleUTC = "2026-09-25 14:30:00"
     static let sampleDate = try! TimezoneConverter.parseUTC(sampleUTC).get()
     static let emphasis = StyleOptions(
@@ -139,10 +140,11 @@ enum ReadmeRenderer {
             RunLoop.main.run(until: Date().addingTimeInterval(0.2))
         }
         window.displayIfNeeded()
-        // Explicit 2× backing makes the committed images independent of display scale.
+        // Render directly into a 3× bitmap for full-resolution documentation
+        // images, independent of the connected display's backing scale.
         let rep = NSBitmapImageRep(
-            bitmapDataPlanes: nil, pixelsWide: Int(size.width * 2),
-            pixelsHigh: Int(size.height * 2), bitsPerSample: 8, samplesPerPixel: 4,
+            bitmapDataPlanes: nil, pixelsWide: Int(size.width * captureScale),
+            pixelsHigh: Int(size.height * captureScale), bitsPerSample: 8, samplesPerPixel: 4,
             hasAlpha: true, isPlanar: false, colorSpaceName: .deviceRGB,
             bytesPerRow: 0, bitsPerPixel: 0)!
         rep.size = size
