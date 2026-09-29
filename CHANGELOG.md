@@ -13,6 +13,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+## [1.4.0] - 2026-09-29
+
+### Changed
+
+- Refreshed the English and Simplified Chinese guides with native screenshots
+  for the clock panel, Settings, and time zone converter.
+
+### Fixed
+
+- Opening the clock panel no longer automatically focuses Settings or restores
+  a previously focused button, preventing an unwanted blue focus ring. The
+  fix also covers rapid reopening and clock refreshes while preserving Tab
+  navigation, Esc, and the Settings, converter, and Quit shortcuts.
+
 ## [1.3.0] - 2026-08-28
 
 ### Added
@@ -201,7 +215,11 @@ First public release.
 - Visual distinction options: font, weight, size, color, icon, and decorator.
 - Settings window.
 
-[Unreleased]: https://github.com/NestDream/UTCMenuBar/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/NestDream/UTCMenuBar/compare/v1.4.0...HEAD
+[1.4.0]: https://github.com/NestDream/UTCMenuBar/compare/v1.3.0...v1.4.0
+[1.3.0]: https://github.com/NestDream/UTCMenuBar/compare/v1.2.0...v1.3.0
+[1.2.0]: https://github.com/NestDream/UTCMenuBar/compare/v1.1.0...v1.2.0
+[1.1.0]: https://github.com/NestDream/UTCMenuBar/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/NestDream/UTCMenuBar/compare/v0.7.0...v1.0.0
 [0.7.0]: https://github.com/NestDream/UTCMenuBar/compare/v0.6.0...v0.7.0
 [0.6.0]: https://github.com/NestDream/UTCMenuBar/compare/v0.5.1...v0.6.0

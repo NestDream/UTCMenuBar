@@ -114,6 +114,12 @@ final class PopoverController {
         panel.makeKey()
 
         viewModel.startTicking()
+        // Opening with the mouse should not select the first (or previously
+        // focused) action. Flush SwiftUI's time update before clearing focus
+        // so a pending layout cannot restore it during a rapid reopen.
+        // The panel stays key for Esc/shortcuts; Tab still focuses buttons.
+        hostingView?.layoutSubtreeIfNeeded()
+        panel.makeFirstResponder(nil)
 
         NSAnimationContext.runAnimationGroup { ctx in
             ctx.duration = 0.15
