@@ -9,9 +9,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Brief, localized copy confirmation in the time zone converter.
+
 ### Changed
 
+- Refined clock typography, spacing, and menu feedback; keyboard dismissal is
+  immediate and presentation respects Reduced Motion and Reduced Transparency.
+- Settings now groups General, Appearance, and About into native segmented
+  panes, with a persistent live preview for display and style changes.
+- Converter labels sit above full-width inputs, with consistent spacing and
+  a visible bidirectional-conversion hint.
+
 ### Fixed
+
+- Converter copy buttons are disabled for empty or invalid conversions, and
+  visible errors update when the app language changes.
 
 ## [1.4.0] - 2026-09-29
 

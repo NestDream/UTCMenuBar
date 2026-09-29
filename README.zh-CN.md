@@ -95,7 +95,7 @@ shasum -a 256 ~/Downloads/UTCMenuBar-vX.Y.Z.zip
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="docs/assets/screenshots/settings-zh-dark.png">
-    <img src="docs/assets/screenshots/settings-zh-light.png" width="380" alt="UTCMenuBar 中文设置滚动至外观、语言与关于部分，顶部固定预览蓝色方括号 Menlo 时钟">
+    <img src="docs/assets/screenshots/settings-zh-light.png" width="380" alt="UTCMenuBar 中文外观设置，包含字体与样式选项，以及顶部固定的时钟预览">
   </picture>
 </p>
 

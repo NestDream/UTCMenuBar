@@ -95,7 +95,7 @@ Open **Settings → Appearance** and watch the pinned preview as you change the 
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="docs/assets/screenshots/settings-en-dark.png">
-    <img src="docs/assets/screenshots/settings-en-light.png" width="380" alt="UTCMenuBar Settings scrolled to appearance options, language, and About, with a blue bracketed Menlo clock preview pinned above">
+    <img src="docs/assets/screenshots/settings-en-light.png" width="380" alt="UTCMenuBar Appearance settings with font and style controls and a pinned live clock preview">
   </picture>
 </p>
 

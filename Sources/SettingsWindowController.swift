@@ -31,9 +31,7 @@ final class SettingsWindowController: NSWindowController, NSWindowDelegate {
         let hosting = NSHostingController(rootView: settingsView)
 
         let window = NSWindow(
-            // Matches SettingsView's fixed frame; the hosting controller resizes
-            // the window to the SwiftUI content anyway, this just avoids a jump.
-            contentRect: NSRect(x: 0, y: 0, width: 380, height: 600),
+            contentRect: NSRect(origin: .zero, size: InterfaceStyle.settingsSize),
             styleMask: [.titled, .closable],
             backing: .buffered, defer: false)
         window.title = Strings.t(.settingsWindowTitle, language: languageStore.current)

@@ -16,14 +16,14 @@ They are native view captures, not whole-desktop screenshots. Window chrome, wal
 
 ### Settings
 
-Appearance, language, and About, with the clock preview pinned above the scrollable form:
+Appearance settings, with General and About available through the native segmented control. The live clock preview stays above the appearance controls:
 
 | Light | Dark |
 | --- | --- |
 | <img src="assets/screenshots/settings-en-light.png" width="380" alt="English Settings with a blue bracketed clock preview, light appearance"> | <img src="assets/screenshots/settings-en-dark.png" width="380" alt="English Settings with a blue bracketed clock preview, dark appearance"> |
 
 <details>
-<summary>General and display settings at the top of the form</summary>
+<summary>General, display, and language settings</summary>
 
 | Light | Dark |
 | --- | --- |
@@ -47,14 +47,14 @@ Appearance, language, and About, with the clock preview pinned above the scrolla
 
 ### 设置
 
-滚动至外观、语言与关于部分，时钟预览始终固定在顶部：
+外观设置；顶部的原生分段控件可切换通用、外观与关于。调整样式时，时钟预览始终可见：
 
 | 浅色 | 深色 |
 | --- | --- |
 | <img src="assets/screenshots/settings-zh-light.png" width="380" alt="中文设置与蓝色方括号时钟预览，浅色外观"> | <img src="assets/screenshots/settings-zh-dark.png" width="380" alt="中文设置与蓝色方括号时钟预览，深色外观"> |
 
 <details>
-<summary>表单顶部的通用与显示设置</summary>
+<summary>通用、显示与语言设置</summary>
 
 | 浅色 | 深色 |
 | --- | --- |
@@ -82,9 +82,9 @@ On a Mac with a logged-in graphical session and a Swift 6 toolchain:
 ./scripts/render-readme.sh
 ```
 
-The script builds the library, compiles the existing views into a temporary documentation app, and exports **18 PNGs at 2× resolution** into `docs/assets/`. It uses isolated preferences, a fixed clock reading, and an inactive login-item adapter. It does not launch the regular app, change its settings, register a login item, or check for updates.
+The script builds the library, compiles the existing views into a temporary documentation app, and exports **34 PNGs at 2× resolution** into `docs/assets/`. It uses isolated preferences, a fixed clock reading, and an inactive login-item adapter. It does not launch the regular app, change its settings, register a login item, or check for updates.
 
-The converter sample is entered through its existing text-change handler and checked before capture. The Settings version comes from the most recent `v*` Git tag. The macOS version can affect native control rendering, and the converter's time-zone picker labels show offsets at capture time, just as they do in the app.
+The capture matrix also includes all three settings panes, seconds, and empty/invalid conversion states. The converter sample is entered through its existing text-change handler and checked before capture. The Settings version comes from the most recent `v*` Git tag. The macOS version can affect native control rendering, and the converter's time-zone picker labels show offsets at capture time, just as they do in the app.
 
 To inspect a fresh set before replacing the committed images:
 
