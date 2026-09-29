@@ -40,7 +40,7 @@ UTCMenuBar adds a dedicated UTC clock beside your Mac's local clock. Give it a d
   </picture>
 </p>
 
-<p align="center"><sub>One clock, your choice of emphasis. Examples rendered with the app's own text formatter and styling.</sub></p>
+<p align="center"><sub>One clock, your choice of emphasis. Examples rendered with the app's own text formatter and styling. Full size: <a href="docs/assets/styles-light.png">Light</a> · <a href="docs/assets/styles-dark.png">Dark</a>.</sub></p>
 
 ## 📦 Install
 
@@ -48,7 +48,7 @@ UTCMenuBar adds a dedicated UTC clock beside your Mac's local clock. Give it a d
 
 1. Download `UTCMenuBar-vX.Y.Z.zip`, unzip it, and move **UTCMenuBar.app** into **Applications**.
 2. Open the app. Its clock appears in the menu bar; there is no Dock icon.
-3. To start it with your Mac, open **Settings → Launch at login**.
+3. To start it with your Mac, open **Settings → General → Launch at login**.
 
 > [!NOTE]
 > Release builds are ad-hoc signed and **not notarized by Apple**. If macOS blocks the first launch, and you trust the download, open **System Settings → Privacy & Security → Open Anyway** after attempting to open it. You can also [build from source](#-development).
@@ -63,13 +63,13 @@ For subsequent versions, right-click the clock and choose **Check for Updates…
 
 ## 📸 Screenshots
 
-The app's native SwiftUI and AppKit views, rendered with sample data. Images follow your light or dark appearance; the [full gallery](docs/SCREENSHOTS.md) shows both, in English and 简体中文.
+High-resolution **3× captures** of the app's native SwiftUI and AppKit views, rendered with sample data. Images follow your light or dark appearance. Open the full-size links below to inspect the details; the [full gallery](docs/SCREENSHOTS.md) includes English and 简体中文.
 
 <table>
   <tr><th>A click away</th><th>UTC ↔ your selected time zone</th></tr>
   <tr>
-    <td align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/assets/screenshots/popover-en-dark.png"><img src="docs/assets/screenshots/popover-en-light.png" width="280" alt="UTC popover showing 14:30, the full date, and shortcuts for Settings, Time Zone Converter, and Quit"></picture></td>
-    <td align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/assets/screenshots/converter-en-dark.png"><img src="docs/assets/screenshots/converter-en-light.png" width="520" alt="Time Zone Converter showing 2026-09-25 14:30 UTC as 07:30 in America/Los_Angeles, with a copy button for each value"></picture></td>
+    <td align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/assets/screenshots/popover-en-dark.png"><img src="docs/assets/screenshots/popover-en-light.png" width="292" alt="UTC popover showing 14:30, the full date, and shortcuts for Settings, Time Zone Converter, and Quit"></picture><br><sub>Full size: <a href="docs/assets/screenshots/popover-en-light.png">Light</a> · <a href="docs/assets/screenshots/popover-en-dark.png">Dark</a></sub></td>
+    <td align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/assets/screenshots/converter-en-dark.png"><img src="docs/assets/screenshots/converter-en-light.png" width="460" alt="Time Zone Converter showing 2026-09-25 14:30 UTC as 07:30 in America/Los_Angeles, with a copy button for each value"></picture><br><sub>Full size: <a href="docs/assets/screenshots/converter-en-light.png">Light</a> · <a href="docs/assets/screenshots/converter-en-dark.png">Dark</a></sub></td>
   </tr>
 </table>
 
@@ -90,13 +90,15 @@ The default display is `🌐 09/25 14:30 UTC`: a compact date and 24-hour time. 
 
 ## 🎨 Make it yours
 
-Open **Settings → Appearance** and watch the pinned preview as you change the clock.
+Open **Settings → Appearance** and watch the pinned preview as you change the clock. The **General** pane holds display, language, startup, and automatic-update preferences; **About** has version information and a manual update check.
 
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="docs/assets/screenshots/settings-en-dark.png">
-    <img src="docs/assets/screenshots/settings-en-light.png" width="380" alt="UTCMenuBar Settings scrolled to appearance options, language, and About, with a blue bracketed Menlo clock preview pinned above">
+    <img src="docs/assets/screenshots/settings-en-light.png" width="440" alt="UTCMenuBar Appearance settings with font and style controls and a pinned live clock preview">
   </picture>
+  <br>
+  <sub>Full size: <a href="docs/assets/screenshots/settings-en-light.png">Light</a> · <a href="docs/assets/screenshots/settings-en-dark.png">Dark</a></sub>
 </p>
 
 | Setting | Choices |
@@ -106,7 +108,7 @@ Open **Settings → Appearance** and watch the pinned preview as you change the 
 | **Color** | Default, Blue, Green, Orange, Purple, or Red; system colors adapt to appearance |
 | **Icon** | 🌐 Globe, 🕐 Clock, 🧭 Compass, 🌍 Earth, or no icon |
 | **Decorator** | Plain, `[brackets]`, `(parentheses)`, or `│bars│` |
-| **Language** | English or 简体中文; switch immediately without restarting |
+| **Language (General)** | English or 简体中文; switch immediately without restarting |
 
 Styling applies to the menu bar and Settings preview. The popover keeps its own large, readable clock. Preferences are saved locally and restored on the next launch.
 
@@ -121,7 +123,9 @@ America/Los_Angeles     2026-09-25 07:30:00
 
 **UTC → local:** paste a UTC timestamp to find the corresponding local time. **Local → UTC:** edit the target field to get a UTC timestamp for a deployment or handoff.
 
-Use `YYYY-MM-DD HH:MM:SS`. **Now** fills both fields with the current instant; the copy button beside either field copies its value. The app remembers your selected time zone and uses macOS time-zone rules for the entered date, including daylight saving time.
+Use `YYYY-MM-DD HH:MM:SS`. **Now** fills both fields with the current instant. The copy button beside either field briefly shows a checkmark after copying; empty or invalid conversions disable copying and display an error for invalid input.
+
+The app remembers your selected time zone and uses macOS time-zone rules for the entered date, including daylight saving time.
 
 The converter handles one selected target zone at a time. The menu bar clock always stays on UTC.
 

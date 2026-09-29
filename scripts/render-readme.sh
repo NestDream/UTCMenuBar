@@ -17,6 +17,8 @@ BIN_DIR="$(swift build --show-bin-path)"
 
 DOC_APP="$RENDER_DIR/UTCMenuBarDocs.app"
 mkdir -p "$DOC_APP/Contents/MacOS"
+mkdir -p "$DOC_APP/Contents/Resources"
+cp "$REPO_ROOT/AppIcon.icns" "$DOC_APP/Contents/Resources/AppIcon.icns"
 VERSION="$(git describe --tags --match 'v*' --abbrev=0 2>/dev/null || echo v0.0.0)"
 BUILD_NUMBER="$(git rev-list --count HEAD 2>/dev/null || echo 1)"
 cat > "$DOC_APP/Contents/Info.plist" <<PLIST
@@ -26,6 +28,7 @@ cat > "$DOC_APP/Contents/Info.plist" <<PLIST
 <key>CFBundleIdentifier</key><string>com.utcmenubar.documentation</string>
 <key>CFBundleExecutable</key><string>UTCMenuBarDocs</string>
 <key>CFBundlePackageType</key><string>APPL</string>
+<key>CFBundleIconFile</key><string>AppIcon</string>
 <key>CFBundleShortVersionString</key><string>${VERSION#v}</string>
 <key>CFBundleVersion</key><string>$BUILD_NUMBER</string>
 <key>LSUIElement</key><true/>
@@ -39,6 +42,7 @@ swiftc -swift-version 6 -parse-as-library \
   -target "$(uname -m)-apple-macosx13.0" \
   -I "$BIN_DIR/Modules" \
   "$REPO_ROOT/scripts/render-readme.swift" \
+  "$REPO_ROOT/Sources/InterfaceStyle.swift" \
   "$REPO_ROOT/Sources/ClockPopoverView.swift" \
   "$REPO_ROOT/Sources/SettingsView.swift" \
   "$REPO_ROOT/Sources/TimezoneConverterWindowController.swift" \

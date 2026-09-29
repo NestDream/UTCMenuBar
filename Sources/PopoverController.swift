@@ -97,11 +97,10 @@ final class PopoverController {
             visibleFrame: (buttonWindow.screen ?? NSScreen.main)?.visibleFrame
         )
 
-        // Origin-aware entrance: emerge downward from the menu bar (the
-        // trigger) rather than materializing in place. Collapses to a plain
-        // fade when the user asks for reduced motion.
+        // Emerge downward from the menu bar. Reduced Motion presents the
+        // panel immediately, without movement or fading.
         let reduceMotion = NSWorkspace.shared.accessibilityDisplayShouldReduceMotion
-        let slide: CGFloat = reduceMotion ? 0 : 6
+        let slide: CGFloat = reduceMotion ? 0 : 4
         let finalFrame = NSRect(origin: origin, size: fittingSize)
         let startFrame = finalFrame.offsetBy(dx: 0, dy: slide)
         panel.setFrame(startFrame, display: false)
@@ -122,8 +121,8 @@ final class PopoverController {
         panel.makeFirstResponder(nil)
 
         NSAnimationContext.runAnimationGroup { ctx in
-            ctx.duration = 0.15
-            ctx.timingFunction = CAMediaTimingFunction(name: .easeOut)
+            ctx.duration = reduceMotion ? 0 : 0.14
+            ctx.timingFunction = CAMediaTimingFunction(controlPoints: 0.23, 1, 0.32, 1)
             panel.animator().alphaValue = 1
             panel.animator().setFrame(finalFrame, display: true)
         }
@@ -131,15 +130,23 @@ final class PopoverController {
         startEventMonitor()
     }
 
-    func close() {
+    func close(animated: Bool = true) {
         guard let panel, panel.isVisible, !isClosing else { return }
         isClosing = true
         stopEventMonitor()
         viewModel.stopTicking()
+        // Keyboard dismissal must return focus immediately. Pointer dismissal
+        // gets a brief fade, with the same generation guard as the entrance.
+        let reduceMotion = NSWorkspace.shared.accessibilityDisplayShouldReduceMotion
+        if !animated || reduceMotion || NSApp.currentEvent?.type == .keyDown {
+            panel.orderOut(nil)
+            isClosing = false
+            return
+        }
         let generation = showGeneration
         NSAnimationContext.runAnimationGroup({ ctx in
-            ctx.duration = 0.1
-            ctx.timingFunction = CAMediaTimingFunction(name: .easeIn)
+            ctx.duration = 0.09
+            ctx.timingFunction = CAMediaTimingFunction(controlPoints: 0.23, 1, 0.32, 1)
             panel.animator().alphaValue = 0
         }, completionHandler: { [weak self] in
             Task { @MainActor in
@@ -180,7 +187,7 @@ final class PopoverController {
             if event.type == .keyDown {
                 let escKeyCode: UInt16 = 53
                 if event.keyCode == escKeyCode, event.window === self.panel {
-                    self.close()
+                    self.close(animated: false)
                     return nil  // swallow the Esc that closed the popover
                 }
                 return event

@@ -1,55 +1,44 @@
 import SwiftUI
 import UTCMenuBarLib
 
-/// The one accent in the app: the cyan of the icon's prime meridian.
-/// Appearance-adaptive — the icon's bright cyan reads well on dark material
-/// but falls below small-text contrast on light, so light mode deepens it.
-let meridianAccent = Color(nsColor: NSColor(name: nil) { appearance in
-    let isDark = appearance.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua
-    return isDark
-        ? NSColor(srgbRed: 0x53 / 255.0, green: 0xC7 / 255.0, blue: 0xF0 / 255.0, alpha: 1)
-        : NSColor(srgbRed: 0x08 / 255.0, green: 0x6F / 255.0, blue: 0x98 / 255.0, alpha: 1)
-})
-
 struct ClockPopoverView: View {
     /// Single source for the popover width; PopoverController's fallback
     /// sizing reads it too, so the two can't drift.
-    static let width: CGFloat = 280
+    static let width: CGFloat = 292
 
+    @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
     @ObservedObject var viewModel: ClockPopoverViewModel
     let onSettings: () -> Void
     let onConverter: () -> Void
     let onQuit: () -> Void
 
     var body: some View {
-        VStack(spacing: 10) {
-            // Hero: the reading itself, then its frame of reference.
-            VStack(spacing: 7) {
+        VStack(spacing: 0) {
+            VStack(spacing: 8) {
                 Text(viewModel.timeText)
-                    .font(.system(size: 38, weight: .medium))
+                    .font(.system(size: 42, weight: .regular))
                     .monospacedDigit()
-                    .tracking(-0.5)  // large text wants slightly negative tracking
+                    .tracking(-1)
                     .foregroundStyle(.primary)
-                HStack(spacing: 8) {
+                    .lineLimit(1)
+                HStack(spacing: 10) {
                     Text("UTC")
-                        .font(.system(size: 10, weight: .bold))
-                        .tracking(0.8)
-                        .foregroundStyle(meridianAccent)
-                        .padding(.horizontal, 6)
-                        .padding(.vertical, 2)
-                        .background(Capsule().fill(meridianAccent.opacity(0.16)))
+                        .font(.system(size: 11, weight: .semibold))
+                        .foregroundStyle(InterfaceStyle.accent)
                     Text(viewModel.dateText)
-                        .font(.system(size: 13))
+                        .font(.system(size: 12))
                         .monospacedDigit()
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(.primary.opacity(0.7))
                 }
             }
-            .padding(.top, 10)
-            .padding(.bottom, 4)
+            .frame(maxWidth: .infinity)
+            .padding(.top, 22)
+            .padding(.bottom, 20)
 
             Divider()
+                .padding(.horizontal, 20)
 
-            VStack(spacing: 2) {
+            VStack(spacing: 3) {
                 // The panel becomes key while open, so the displayed
                 // shortcuts actually work, not just decorate.
                 PopoverButton(
@@ -67,23 +56,26 @@ struct ClockPopoverView: View {
                 )
                 .keyboardShortcut("t", modifiers: .command)
 
-                Divider()
-                    .padding(.vertical, 4)
-
                 PopoverButton(
                     title: Strings.t(.menuQuit, language: viewModel.language),
                     systemImage: "power",
                     shortcut: "⌘Q",
+                    isSecondary: true,
                     action: onQuit
                 )
                 .keyboardShortcut("q", modifiers: .command)
             }
+            .padding(10)
         }
-        .padding(14)
         .frame(width: Self.width)
-        // A plain rounded panel below the menu bar, the way system menu bar
-        // extras present — no fake arrow nub.
-        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+        .background {
+            let shape = RoundedRectangle(cornerRadius: InterfaceStyle.panelRadius, style: .continuous)
+            if reduceTransparency {
+                shape.fill(Color(nsColor: .windowBackgroundColor))
+            } else {
+                shape.fill(.regularMaterial)
+            }
+        }
     }
 }
 
@@ -91,31 +83,57 @@ private struct PopoverButton: View {
     let title: String
     let systemImage: String
     let shortcut: String
+    var isSecondary = false
     let action: () -> Void
-    @State private var isHovered = false
 
     var body: some View {
         Button(action: action) {
-            HStack(spacing: 8) {
+            HStack(spacing: 10) {
                 Image(systemName: systemImage)
-                    .font(.system(size: 13))
-                    .frame(width: 18, alignment: .center)
+                    .font(.system(size: 14, weight: .regular))
+                    .foregroundStyle(.secondary)
+                    .frame(width: 20, alignment: .center)
                 Text(title)
                     .font(.system(size: 13))
+                    .foregroundStyle(.primary.opacity(isSecondary ? 0.75 : 1))
+                    .lineLimit(1)
                 Spacer()
                 Text(shortcut)
-                    .font(.system(size: 11))
-                    .foregroundStyle(.tertiary)
+                    .font(.system(size: 11, weight: .regular, design: .monospaced))
+                    .foregroundStyle(.primary.opacity(0.7))
             }
+            .padding(.horizontal, 10)
+            .frame(height: 36)
             .contentShape(Rectangle())
-            .padding(.horizontal, 8)
-            .padding(.vertical, 6)
-            .background(
-                RoundedRectangle(cornerRadius: 6)
-                    .fill(isHovered ? Color.primary.opacity(0.08) : Color.clear)
-            )
         }
-        .buttonStyle(.plain)
-        .onHover { isHovered = $0 }
+        .buttonStyle(PopoverActionStyle())
+    }
+}
+
+private struct PopoverActionStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        ActionFeedback(isPressed: configuration.isPressed) {
+            configuration.label
+        }
+    }
+}
+
+private struct ActionFeedback<Content: View>: View {
+    let isPressed: Bool
+    @ViewBuilder let content: () -> Content
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var isHovered = false
+
+    var body: some View {
+        content()
+            .background {
+                RoundedRectangle(cornerRadius: InterfaceStyle.controlRadius, style: .continuous)
+                    .fill(Color.primary.opacity(isPressed ? 0.11 : (isHovered ? 0.06 : 0)))
+            }
+            .onHover { hovering in
+                withAnimation(reduceMotion ? nil : .easeOut(duration: 0.1)) {
+                    isHovered = hovering
+                }
+            }
     }
 }

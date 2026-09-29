@@ -7,11 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.5.0] - 2026-09-29
+
 ### Added
+
+- Brief, localized copy confirmation in the time zone converter.
 
 ### Changed
 
+- Refined clock typography, spacing, and menu feedback; keyboard dismissal is
+  immediate and presentation respects Reduced Motion and Reduced Transparency.
+- Settings now groups General, Appearance, and About into native segmented
+  panes, with a persistent live preview for display and style changes.
+- Converter labels sit above full-width inputs, with consistent spacing and
+  a visible bidirectional-conversion hint.
+- English and Simplified Chinese guides now include 3× native screenshots,
+  full-size image links, and updated settings and converter instructions.
+
 ### Fixed
+
+- Converter copy buttons are disabled for empty or invalid conversions, and
+  visible errors update when the app language changes.
 
 ## [1.4.0] - 2026-09-29
 
@@ -215,7 +231,8 @@ First public release.
 - Visual distinction options: font, weight, size, color, icon, and decorator.
 - Settings window.
 
-[Unreleased]: https://github.com/NestDream/UTCMenuBar/compare/v1.4.0...HEAD
+[Unreleased]: https://github.com/NestDream/UTCMenuBar/compare/v1.5.0...HEAD
+[1.5.0]: https://github.com/NestDream/UTCMenuBar/compare/v1.4.0...v1.5.0
 [1.4.0]: https://github.com/NestDream/UTCMenuBar/compare/v1.3.0...v1.4.0
 [1.3.0]: https://github.com/NestDream/UTCMenuBar/compare/v1.2.0...v1.3.0
 [1.2.0]: https://github.com/NestDream/UTCMenuBar/compare/v1.1.0...v1.2.0

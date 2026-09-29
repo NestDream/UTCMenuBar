@@ -83,6 +83,7 @@ public enum StringKey: String, CaseIterable, Sendable {
     case converterLabelTarget
     case converterNowButton
     case converterCopyButton
+    case converterCopied
     case converterBidirectional
     case converterErrorInvalidFormat
     case converterErrorYearOutOfRange
@@ -227,6 +228,7 @@ public enum Strings {
         .converterLabelTarget: "Target",
         .converterNowButton: "Now",
         .converterCopyButton: "Copy",
+        .converterCopied: "Copied",
         .converterBidirectional: "Converts in both directions",
         .converterErrorInvalidFormat: "Invalid format. Use YYYY-MM-DD HH:MM:SS",
         .converterErrorYearOutOfRange: "Year out of range (1900-2100)",
@@ -252,7 +254,7 @@ public enum Strings {
 
         .settingsSectionGeneral: "General",
         .settingsLaunchAtLogin: "Launch at login",
-        .launchAtLoginRequiresApproval: "Pending approval — open System Settings to enable",
+        .launchAtLoginRequiresApproval: "Pending approval. Open System Settings to enable.",
         .launchAtLoginOpenSettings: "Open Login Items…",
         .launchAtLoginErrorTitle: "Couldn't change launch-at-login setting",
 
@@ -332,6 +334,7 @@ public enum Strings {
         .converterLabelTarget: "目标",
         .converterNowButton: "现在",
         .converterCopyButton: "复制",
+        .converterCopied: "已复制",
         .converterBidirectional: "双向转换",
         .converterErrorInvalidFormat: "无法解析时间，请使用 YYYY-MM-DD HH:MM:SS 格式",
         .converterErrorYearOutOfRange: "年份超出范围（1900-2100）",
@@ -357,7 +360,7 @@ public enum Strings {
 
         .settingsSectionGeneral: "通用",
         .settingsLaunchAtLogin: "开机启动",
-        .launchAtLoginRequiresApproval: "等待系统授权 — 请前往「系统设置」启用",
+        .launchAtLoginRequiresApproval: "等待系统授权，请前往「系统设置」启用",
         .launchAtLoginOpenSettings: "打开登录项设置…",
         .launchAtLoginErrorTitle: "无法更改开机启动设置",
 

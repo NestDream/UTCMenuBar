@@ -6,6 +6,7 @@ import UTCMenuBarLib
 @main
 @MainActor
 enum ReadmeRenderer {
+    static let captureScale: CGFloat = 3
     static let sampleUTC = "2026-09-25 14:30:00"
     static let sampleDate = try! TimezoneConverter.parseUTC(sampleUTC).get()
     static let emphasis = StyleOptions(
@@ -64,18 +65,23 @@ enum ReadmeRenderer {
             viewModel: clock, onSettings: {}, onConverter: {}, onQuit: {}))
         try snapshot(popover, size: popover.fittingSize, appearance: appearance,
                      to: destination("popover"))
+        clock.timeText = TimeFormatter.formatTime(date: sampleDate, compact: false)
+        try snapshot(popover, size: popover.fittingSize, appearance: appearance,
+                     to: destination("popover-seconds"))
 
         let settingsVM = SettingsViewModel2(
             styleStore: styles, languageStore: languages, loginItem: PreviewLoginItem(),
             displayOptions: .default, displayDefaults: defaults,
             onDisplayOptionsChanged: { _ in })
         settingsVM.previewText = TimeFormatter.formatDisplay(date: sampleDate, options: .default)
-        let settings = NSHostingView(rootView: SettingsView(
-            viewModel: settingsVM, onPickCustomFont: {}, onCheckForUpdates: {}))
-        try snapshot(settings, size: settings.fittingSize, appearance: appearance,
-                     to: destination("settings-general"))
-        try snapshot(settings, size: settings.fittingSize, appearance: appearance,
-                     to: destination("settings"), scrollToBottom: true)
+        for (pane, name) in [(SettingsPane.general, "settings-general"),
+                             (.appearance, "settings"), (.about, "settings-about")] {
+            let settings = NSHostingView(rootView: SettingsView(
+                viewModel: settingsVM, onPickCustomFont: {}, onCheckForUpdates: {},
+                initialPane: pane))
+            try snapshot(settings, size: settings.fittingSize, appearance: appearance,
+                         to: destination(name))
+        }
 
         let converter = TimezoneConverterWindowController(
             converterStore: converterStore, languageStore: languages)
@@ -85,6 +91,8 @@ enum ReadmeRenderer {
         let inputs = descendants(content).compactMap { $0 as? NSTextField }
             .filter { $0.isEditable }
         guard inputs.count == 2 else { fatalError("Converter input layout changed") }
+        try snapshot(content, size: content.frame.size, appearance: appearance,
+                     to: destination("converter-empty"))
         inputs[0].stringValue = sampleUTC
         NotificationCenter.default.post(name: NSControl.textDidChangeNotification, object: inputs[0])
         guard inputs[1].stringValue == "2026-09-25 07:30:00" else {
@@ -92,6 +100,10 @@ enum ReadmeRenderer {
         }
         try snapshot(content, size: content.frame.size, appearance: appearance,
                      to: destination("converter"))
+        inputs[0].stringValue = "2026-09-"
+        NotificationCenter.default.post(name: NSControl.textDidChangeNotification, object: inputs[0])
+        try snapshot(content, size: content.frame.size, appearance: appearance,
+                     to: destination("converter-error"))
     }
 
     static func descendants(_ view: NSView) -> [NSView] {
@@ -128,10 +140,11 @@ enum ReadmeRenderer {
             RunLoop.main.run(until: Date().addingTimeInterval(0.2))
         }
         window.displayIfNeeded()
-        // Explicit 2× backing makes the committed images independent of display scale.
+        // Render directly into a 3× bitmap for full-resolution documentation
+        // images, independent of the connected display's backing scale.
         let rep = NSBitmapImageRep(
-            bitmapDataPlanes: nil, pixelsWide: Int(size.width * 2),
-            pixelsHigh: Int(size.height * 2), bitsPerSample: 8, samplesPerPixel: 4,
+            bitmapDataPlanes: nil, pixelsWide: Int(size.width * captureScale),
+            pixelsHigh: Int(size.height * captureScale), bitsPerSample: 8, samplesPerPixel: 4,
             hasAlpha: true, isPlanar: false, colorSpaceName: .deviceRGB,
             bytesPerRow: 0, bitsPerPixel: 0)!
         rep.size = size
